@@ -8,7 +8,7 @@ Description: The Montana Climate Office is an independent state-designated body 
     for the Montana Climate Office R products. It contains useful data such as 
     county and climate division maps, as well as commonly used functions 
     including standard web and print map templates.
-Depends: R (>= 3.4.3)
+Depends: R (>= 3.4.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

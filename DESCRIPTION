@@ -1,0 +1,16 @@
+Package: mcor
+Title: The Core Montana Climate Office R Package
+Version: 0.0.0.9000
+Authors@R: person("Kyle", "Bocinsky", email = "kyle.bocinsky@umontana.edu", role = c("aut", "cre"))
+Description: The Montana Climate Office is an independent state-designated body that provides 
+    Montanans with high-quality, timely, relevant, and scientifically based 
+    climate information and services. The mcor package is the base R package 
+    for the Montana Climate Office R products. It contains useful data such as 
+    county and climate division maps, as well as commonly used functions 
+    including standard web and print map templates.
+Depends: R (>= 3.4.3)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: testthat,
+    covr

@@ -1,4 +1,4 @@
 library(testthat)
 library(mcor)
 
-test_check("mcor")
+# test_check("mcor")

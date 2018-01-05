@@ -9,6 +9,6 @@
 ^Icon $
 ^Icon$
 Icon
-^data/Icon$
-^data/Icon $
-^/Icon $
+^data/Icon\r$
+^data/Icon\r$
+^/Icon\r$

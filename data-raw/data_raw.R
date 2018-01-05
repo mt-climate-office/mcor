@@ -90,3 +90,7 @@ unlink("./data-raw/tl_2017_us_county",
 
 unlink("./data-raw/CONUS_CLIMATE_DIVISIONS",
        recursive = TRUE)
+
+unlink("./data-raw/tl_2017_us_county.zip")
+
+unlink("./data-raw/CONUS_CLIMATE_DIVISIONS.shp.zip")

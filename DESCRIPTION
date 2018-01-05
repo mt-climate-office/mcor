@@ -18,8 +18,8 @@ Imports: plotly,
     ggplot2,
     raster,
     magrittr,
-    sf
-Suggests: testthat,
-    covr,
+    sf,
     rmapshaper,
     FedData
+Suggests: testthat,
+    covr

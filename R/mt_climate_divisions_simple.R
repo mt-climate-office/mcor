@@ -9,9 +9,9 @@
 #' package.
 #'
 #' @format A simple feature collection with 56 features and 3 fields:
-#' * **CLIMATE_DIVISION_ID** — the NOAA Climate Divisional Database (nCLIMDIV) identifier
-#' * **CLIMATE_DIVISION_FIPS** — the Federal Information Processing Standard (FIPS) climate division code
-#' * **CLIMATE_DIVISION_NAME** — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+#' * **Division** — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+#' * **Division code** — the NOAA Climate Divisional Database (nCLIMDIV) identifier
+#' * **Division FIPS code** — the Federal Information Processing Standard (FIPS) climate division code
 #'
 #' @source \url{https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.ncdc:C00005}
 "mt_climate_divisions_simple"

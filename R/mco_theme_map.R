@@ -5,14 +5,14 @@
 #' @param base_size base font size
 #' @param base_family base font family
 #'
-#' @importFrom ggplot2 %+replace% theme_bw element_blank unit element_line
+#' @importFrom ggplot2 %+replace%
 #' @export
 #'
 #' @examples
 #' library(ggplot2)
 #'
 #' ggplot(mt_counties_simple) +
-#'   geom_sf(aes(fill = CLIMATE_DIVISION_NAME),
+#'   geom_sf(aes(fill = Division),
 #'               color = "white") +
 #'   mco_theme_map()
 mco_theme_map <- function(base_size = 9, base_family = ""){
@@ -27,6 +27,10 @@ mco_theme_map <- function(base_size = 9, base_family = ""){
           panel.grid.major = ggplot2::element_line(colour = 'transparent'),
           panel.grid.minor = ggplot2::element_line(colour = 'transparent'),
           panel.spacing = ggplot2::unit(0,"lines"),
-          plot.background = ggplot2::element_blank()
+          legend.justification = c(0,0),
+          legend.position = c(-0.02,0),
+          legend.background = ggplot2::element_blank(),
+          plot.background = ggplot2::element_blank(),
+          plot.margin = ggplot2::margin(0,0,0,10)
     )
 }

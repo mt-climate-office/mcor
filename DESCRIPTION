@@ -20,6 +20,11 @@ Imports: plotly,
     magrittr,
     sf,
     rmapshaper,
-    FedData
+    FedData,
+    dplyr,
+    purrr,
+    readr,
+    stringr,
+    tidyr
 Suggests: testthat,
     covr

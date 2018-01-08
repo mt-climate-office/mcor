@@ -11,14 +11,14 @@
 #' package.
 #'
 #' @format A simple feature collection with 56 features and 8 fields:
-#' * **STATE_FIPS** — the Federal Information Processing Standard (FIPS) state code
-#' * **COUNTY_FIPS** — the Federal Information Processing Standard (FIPS) county code
-#' * **COUNTY_ANSI** — the American National Standards Institute (ANSI) county code
-#' * **COUNTY_GEOID** — the US Geographic Identifier (GEOID) county code
-#' * **COUNTY_NAME** — the county name
-#' * **CLIMATE_DIVISION_ID** — the NOAA Climate Divisional Database (nCLIMDIV) identifier
-#' * **CLIMATE_DIVISION_FIPS** — the Federal Information Processing Standard (FIPS) climate division code
-#' * **CLIMATE_DIVISION_NAME** — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+#' * **County** — the county name
+#' * **State FIPS code** — the Federal Information Processing Standard (FIPS) state code
+#' * **County FIPS code** — the Federal Information Processing Standard (FIPS) county code
+#' * **County ANSI code** — the American National Standards Institute (ANSI) county code
+#' * **County GEOID code** — the US Geographic Identifier (GEOID) county code
+#' * **Division** — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+#' * **Division code** — the NOAA Climate Divisional Database (nCLIMDIV) identifier
+#' * **Division FIPS code** — the Federal Information Processing Standard (FIPS) climate division code
 #'
 #' @source \url{https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip}
 "mt_counties"

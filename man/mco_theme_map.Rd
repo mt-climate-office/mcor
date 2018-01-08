@@ -18,7 +18,7 @@ A \strong{ggplot2} theme that is good for displaying maps from \link[ggplot2:ggs
 library(ggplot2)
 
 ggplot(mt_counties_simple) +
-  geom_sf(aes(fill = CLIMATE_DIVISION_NAME),
+  geom_sf(aes(fill = Division),
               color = "white") +
   mco_theme_map()
 }

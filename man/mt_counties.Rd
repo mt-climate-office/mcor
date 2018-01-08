@@ -6,14 +6,14 @@
 \title{Polygons of Montana Counties}
 \format{A simple feature collection with 56 features and 8 fields:
 \itemize{
-\item \strong{STATE_FIPS} — the Federal Information Processing Standard (FIPS) state code
-\item \strong{COUNTY_FIPS} — the Federal Information Processing Standard (FIPS) county code
-\item \strong{COUNTY_ANSI} — the American National Standards Institute (ANSI) county code
-\item \strong{COUNTY_GEOID} — the US Geographic Identifier (GEOID) county code
-\item \strong{COUNTY_NAME} — the county name
-\item \strong{CLIMATE_DIVISION_ID} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
-\item \strong{CLIMATE_DIVISION_FIPS} — the Federal Information Processing Standard (FIPS) climate division code
-\item \strong{CLIMATE_DIVISION_NAME} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+\item \strong{County} — the county name
+\item \strong{State FIPS code} — the Federal Information Processing Standard (FIPS) state code
+\item \strong{County FIPS code} — the Federal Information Processing Standard (FIPS) county code
+\item \strong{County ANSI code} — the American National Standards Institute (ANSI) county code
+\item \strong{County GEOID code} — the US Geographic Identifier (GEOID) county code
+\item \strong{Division} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
+\item \strong{Division code} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
+\item \strong{Division FIPS code} — the Federal Information Processing Standard (FIPS) climate division code
 }}
 \source{
 \url{https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip}

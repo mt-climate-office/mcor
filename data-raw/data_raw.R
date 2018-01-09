@@ -11,6 +11,44 @@ library(velox)
 # The NAD 1983 HARN StatePlane Montana FIPS 2500 coordinate reference system
 mt_state_plane <- sf::st_crs(102300)
 
+# # Get the Montana county boundary dataset from the Montana Spatial Data Infrastructure
+# FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip", destdir = "./data-raw")
+# unzip("./data-raw/MontanaCounties.zip", exdir = "./data-raw/MontanaCounties")
+# # mt_counties <- sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County")
+# mt_counties <- sf::st_read("/Volumes/MCO/Resources/Data/Boundaries/BoundariesMSP.gdb", layer = "MontanaCounties") %>%
+#   sf::st_transform(mt_state_plane) %>%
+#   dplyr::mutate(`State FIPS code` = "30") %>%
+#   dplyr::select(NAMELABEL,
+#                 `State FIPS code`,
+#                 FIPS) %>%
+#   dplyr::mutate_at(.vars = vars(NAMELABEL:FIPS), .funs = ~as.character(.)) %>%
+#   dplyr::rename(`County` = NAMELABEL,
+#                 `County FIPS code` = FIPS) %>%
+#   tibble::as_data_frame() %>%
+#   sf::st_as_sf()
+#
+# # test <- mt_counties %>%
+# #   sf::st_relate()
+# #
+# # test %>%
+# #   apply(1,function(x){!(x %in% c("2FFF1FFF2",
+# #                                     "FF2FF1212",
+# #                                     "FF2F11212"))}) %>%
+# #   any()
+# #
+# # !(test %in% c("2FFF1FFF2",
+# #               "FF2FF1212",
+# #               "FF2F11212"))
+#
+# # leaflet::leaflet() %>%
+# #   leaflet::addTiles() %>%
+# #   leaflet::addPolygons(data = mt_counties %>%
+# #                          sf::st_transform(4326)) %>%
+# #   leaflet::addPolygons(data = mt_counties %>%
+# #                          sf::st_union() %>%
+# #                          sf::st_transform(4326),
+# #                        col = "red")
+
 # Get the Montana county boundary from US Census TIGER database
 FedData::download_data("https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip", destdir = "./data-raw")
 unzip("./data-raw/tl_2017_us_county.zip", exdir = "./data-raw/tl_2017_us_county")
@@ -145,14 +183,78 @@ mt_hillshade_500m[]=as.integer(mt_hillshade_500m[])
 
 raster::dataType(mt_hillshade_500m) <- "INT1U"
 
+## Get the Watershed Boundary Dataset for Montana
+FedData::download_data("https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrography/WBD/National/GDB/WBD_National_GDB.zip",
+                       destdir = "./data-raw")
+unzip("./data-raw/WBD_National_GDB.zip",
+      exdir = "./data-raw/WBD_National_GDB")
+
+# The latest HUC12 is corrupt (Jan 3, 2018), so this goes through HUC10, and then we supplement.
+mt_watersheds <- seq(2,10,2) %>%
+  purrr::map(function(hu){
+    layer_name <- paste0("WBDHU",hu)
+
+    out <- sf::st_read("./data-raw/WBD_National_GDB/WBD/WBD.gdb",
+                       layer = layer_name) %>%
+      dplyr::filter(grepl("MT",STATES)) %>%
+      dplyr::select(dplyr::starts_with("HUC"),
+                    NAME) %>%
+      dplyr::mutate(`Hydrologic Unit` = factor(hu,
+                                               levels = seq(2,12,2),
+                                               ordered = TRUE)) %>%
+      dplyr::rename(Watershed = NAME,
+                    geometry = SHAPE)
+
+    names(out)[1] <- "WBD code"
+
+    return(out)
+  }) %>%
+  do.call(rbind,.) %>%
+  sf::st_transform(mt_state_plane) %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
+
+# Download HUC12 dataset from https://nrcs.app.box.com/v/gateway/folder/39640323180
+unzip("./data-raw/wbdhu12_a_us_september2017.zip",
+      exdir = "./data-raw/wbdhu12_a_us_september2017")
+
+huc12 <- sf::st_read("./data-raw/wbdhu12_a_us_september2017/wbdhu12_a_us_september2017.gdb",
+                   layer = "WBDHU12") %>%
+  dplyr::filter(grepl("MT",STATES)) %>%
+  dplyr::select(dplyr::starts_with("HUC"),
+                NAME) %>%
+  dplyr::mutate(`Hydrologic Unit` = factor(12,
+                                           levels = seq(2,12,2),
+                                           ordered = TRUE)) %>%
+  dplyr::rename(Watershed = NAME,
+                geometry = Shape) %>%
+  sf::st_transform(mt_state_plane) %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
+
+names(huc12)[1] <- "WBD code"
+
+mt_watersheds %<>%
+  rbind(huc12)
+
+mt_watersheds %<>%
+  rmapshaper::ms_simplify() %>%
+  magrittr::set_names(names(mt_watersheds))
+
 devtools::use_data(mt_state_plane, overwrite = T)
 devtools::use_data(mt_counties, overwrite = T)
 devtools::use_data(mt_counties_simple, overwrite = T)
 devtools::use_data(mt_climate_divisions, overwrite = T)
 devtools::use_data(mt_climate_divisions_simple, overwrite = T)
 devtools::use_data(mt_hillshade_500m, overwrite = T)
+devtools::use_data(mt_watersheds, overwrite = T)
 
 unlink("./data-raw/tl_2017_us_county",
+       recursive = TRUE)
+
+unlink("./data-raw/MontanaCounties.zip")
+
+unlink("./data-raw/MontanaCounties/",
        recursive = TRUE)
 
 unlink("./data-raw/CONUS_CLIMATE_DIVISIONS",
@@ -167,4 +269,14 @@ unlink("./data-raw/mt_NED_1.tif")
 unlink("./data-raw/mt_hillshade.tif")
 
 unlink("./data-raw/ned",
+       recursive = TRUE)
+
+unlink("./data-raw/wbdhu12_a_us_september2017.zip")
+
+unlink("./data-raw/wbdhu12_a_us_september2017",
+       recursive = TRUE)
+
+unlink("./data-raw/WBD_National_GDB.zip")
+
+unlink("./data-raw/WBD_National_GDB",
        recursive = TRUE)

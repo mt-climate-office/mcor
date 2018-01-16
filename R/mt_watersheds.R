@@ -1,8 +1,7 @@
 #' The Watershed Boundary Dataset Intersecting Montana
 #'
 #' A dataset containing polygons of Watershed Boundary Dataset (WBD) that intersect Montana.
-#' These data are simplified using [rmapshaper::ms_simplify()].
-#' These polygons are appropriate for web maps and small and large print maps.
+#' These polygons are appropriate for large print maps.
 #' The script that prepared the data is [`data-raw/raw_data.R`]() in the source version of this
 #' package.
 #'

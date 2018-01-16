@@ -18,8 +18,7 @@ mt_watersheds
 }
 \description{
 A dataset containing polygons of Watershed Boundary Dataset (WBD) that intersect Montana.
-These data are simplified using \code{\link[rmapshaper:ms_simplify]{rmapshaper::ms_simplify()}}.
-These polygons are appropriate for web maps and small and large print maps.
+These polygons are appropriate for large print maps.
 The script that prepared the data is \url{data-raw/raw_data.R} in the source version of this
 package.
 }

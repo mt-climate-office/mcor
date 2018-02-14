@@ -8,8 +8,7 @@ Status](https://img.shields.io/codecov/c/github/mt-climate-office/mcor/master.sv
 
 # **`mcor`**: The core Montana Climate Office *R* package
 
-![The Montana Climate Office
-Logo](https://climate.umt.edu/imx/MCO-Logo-Footer.png%20%7C%20width=150)
+<img src="https://climate.umt.edu/imx/MCO-Logo-Footer.png" alt="The Montana Climate Office Logo" style="width: 300px;"/><br>
 
 The [Montana Climate Office](https://climate.umt.edu/) is an independent
 state-designated body that provides Montanans with high-quality, timely,

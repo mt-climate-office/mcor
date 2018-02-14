@@ -8,6 +8,9 @@ Status](https://img.shields.io/codecov/c/github/mt-climate-office/mcor/master.sv
 
 # **`mcor`**: The core Montana Climate Office *R* package
 
+![The Montana Climate Office
+Logo](https://climate.umt.edu/imx/MCO-Logo-Footer.png%20%7C%20width=150)
+
 The [Montana Climate Office](https://climate.umt.edu/) is an independent
 state-designated body that provides Montanans with high-quality, timely,
 relevant, and scientifically based climate information and services. The
@@ -32,3 +35,9 @@ Montana Climate Office; please submit an issue or pull request. Please
 note that this project is released with a [Contributor Code of
 Conduct](CONDUCT.md). By participating in this project you agree to
 abide by its terms.
+
+-----
+
+**Montana Climate Office**<br> Montana Forest & Conservation Experiment
+Station<br> University of Montana<br> 32 Campus Drive<br> Missoula, MT
+59812<br> Phone: (406) 243-6793<br> <state.climatologist@umontana.edu>

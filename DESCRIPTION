@@ -27,4 +27,7 @@ Imports: plotly,
     stringr,
     tidyr
 Suggests: testthat,
-    covr
+    covr,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

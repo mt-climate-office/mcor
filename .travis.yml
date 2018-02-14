@@ -26,6 +26,7 @@ apt_packages:
   - libjq-dev
   - libv8-3.14-dev
   - libprotobuf-dev
+  - protobuf-compiler
 
 r_packages:
   - devtools

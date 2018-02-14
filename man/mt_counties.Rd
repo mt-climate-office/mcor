@@ -9,22 +9,20 @@
 \item \strong{County} — the county name
 \item \strong{State FIPS code} — the Federal Information Processing Standard (FIPS) state code
 \item \strong{County FIPS code} — the Federal Information Processing Standard (FIPS) county code
-\item \strong{County ANSI code} — the American National Standards Institute (ANSI) county code
-\item \strong{County GEOID code} — the US Geographic Identifier (GEOID) county code
 \item \strong{Division} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
 \item \strong{Division code} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
 \item \strong{Division FIPS code} — the Federal Information Processing Standard (FIPS) climate division code
 }}
 \source{
-\url{https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip}
+\url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}
 }
 \usage{
 mt_counties
 }
 \description{
 A dataset containing polygons of Montana counties.
-These data are from the US Census 2017 TIGER/Line Shapefiles,
-available at \href{https://www.census.gov/geo/maps-data/data/tiger-line.html}{the US Census website},
+These data are built from the Montana Cadastral database,
+and are available from \href{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}{the Montana State Library},
 and transformed using \code{\link[sf:st_transform]{sf::st_transform()}} to the \emph{NAD 1983 HARN StatePlane Montana FIPS 2500} projection
 coordinate system (\href{https://epsg.io/102300}{EPSG: 102300}). They were then joined with the \href{https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.ncdc:C00005}{MontanaClimate Divisions}.
 These polygons are appropriate for large print maps.

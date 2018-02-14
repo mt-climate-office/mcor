@@ -9,14 +9,12 @@
 \item \strong{County} — the county name
 \item \strong{State FIPS code} — the Federal Information Processing Standard (FIPS) state code
 \item \strong{County FIPS code} — the Federal Information Processing Standard (FIPS) county code
-\item \strong{County ANSI code} — the American National Standards Institute (ANSI) county code
-\item \strong{County GEOID code} — the US Geographic Identifier (GEOID) county code
 \item \strong{Division} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
 \item \strong{Division code} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
 \item \strong{Division FIPS code} — the Federal Information Processing Standard (FIPS) climate division code
 }}
 \source{
-\url{https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip}
+\url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}
 }
 \usage{
 mt_counties_simple

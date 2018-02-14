@@ -14,62 +14,37 @@ mt_state_plane <- sf::st_crs(102300)
 # Get the Montana county boundary dataset from the Montana Spatial Data Infrastructure
 FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip", destdir = "./data-raw")
 unzip("./data-raw/MontanaCounties.zip", exdir = "./data-raw/MontanaCounties")
-mt_counties <- sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County")
-# mt_counties <- sf::st_read("/Volumes/MCO/Resources/Data/Boundaries/BoundariesMSP.gdb", layer = "MontanaCounties") %>%
-  # sf::st_transform(mt_state_plane) %>%
-  # dplyr::mutate(`State FIPS code` = "30") %>%
-  # dplyr::select(NAMELABEL,
-  #               `State FIPS code`,
-  #               FIPS) %>%
-  # dplyr::mutate_at(.vars = vars(NAMELABEL:FIPS), .funs = ~as.character(.)) %>%
-  # dplyr::rename(`County` = NAMELABEL,
-  #               `County FIPS code` = FIPS) %>%
-  # tibble::as_data_frame() %>%
-  # sf::st_as_sf()
-
-# test <- mt_counties %>%
-#   sf::st_relate()
-#
-# test %>%
-#   apply(1,function(x){!(x %in% c("2FFF1FFF2",
-#                                     "FF2FF1212",
-#                                     "FF2F11212"))}) %>%
-#   any()
-#
-# !(test %in% c("2FFF1FFF2",
-#               "FF2FF1212",
-#               "FF2F11212"))
-
-#
-# leaflet::leaflet() %>%
-#   leaflet::addTiles() %>%
-#   leaflet::addPolygons(data = mt_counties %>%
-#                          sf::st_transform(4326)) %>%
-#   leaflet::addPolygons(data = mt_counties %>%
-#                          sf::st_union() %>%
-#                          sf::st_transform(4326),
-#                        col = "red")
+mt_counties <- sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County") %>%
+sf::st_transform(mt_state_plane) %>%
+dplyr::mutate(`State FIPS code` = "30") %>%
+dplyr::select(NAMELABEL,
+              `State FIPS code`,
+              FIPS) %>%
+dplyr::mutate_at(.vars = vars(NAMELABEL:FIPS), .funs = ~as.character(.)) %>%
+dplyr::rename(`County` = NAMELABEL,
+              `County FIPS code` = FIPS) %>%
+tibble::as_data_frame() %>%
+sf::st_as_sf()
 
 # Get the Montana county boundary from US Census TIGER database
-FedData::download_data("https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip", destdir = "./data-raw")
-unzip("./data-raw/tl_2017_us_county.zip", exdir = "./data-raw/tl_2017_us_county")
-mt_counties <- sf::st_read("./data-raw/tl_2017_us_county/tl_2017_us_county.shp") %>%
-  dplyr::filter(STATEFP == "30") %>%
-  sf::st_transform(mt_state_plane) %>%
-  dplyr::select(NAME,
-                STATEFP,
-                COUNTYFP,
-                COUNTYNS,
-                GEOID) %>%
-  dplyr::mutate_at(.vars = vars(NAME:GEOID), .funs = ~as.character(.)) %>%
-  dplyr::rename(`County` = NAME,
-                `State FIPS code` = STATEFP,
-                `County FIPS code` = COUNTYFP,
-                `County ANSI code` = COUNTYNS,
-                `County GEOID code` = GEOID) %>%
-  tibble::as_data_frame() %>%
-  sf::st_as_sf()
-
+# FedData::download_data("https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip", destdir = "./data-raw")
+# unzip("./data-raw/tl_2017_us_county.zip", exdir = "./data-raw/tl_2017_us_county")
+# mt_counties <- sf::st_read("./data-raw/tl_2017_us_county/tl_2017_us_county.shp") %>%
+#   dplyr::filter(STATEFP == "30") %>%
+#   sf::st_transform(mt_state_plane) %>%
+#   dplyr::select(NAME,
+#                 STATEFP,
+#                 COUNTYFP,
+#                 COUNTYNS,
+#                 GEOID) %>%
+#   dplyr::mutate_at(.vars = vars(NAME:GEOID), .funs = ~as.character(.)) %>%
+#   dplyr::rename(`County` = NAME,
+#                 `State FIPS code` = STATEFP,
+#                 `County FIPS code` = COUNTYFP,
+#                 `County ANSI code` = COUNTYNS,
+#                 `County GEOID code` = GEOID) %>%
+#   tibble::as_data_frame() %>%
+#   sf::st_as_sf()
 
 # Get the official climate division shapefiles
 FedData::download_data("ftp://ftp.ncdc.noaa.gov/pub/data/cirs/climdiv/CONUS_CLIMATE_DIVISIONS.shp.zip", destdir = "./data-raw")
@@ -100,7 +75,9 @@ mt_counties %<>%
                 `Division`,
                 `Division code`,
                 `Division FIPS code`) %>%
-  left_join(mt_counties, .)
+  left_join(mt_counties, .) %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
 
 mt_climate_divisions <- mt_counties %>%
   dplyr::select(`Division`,
@@ -112,11 +89,15 @@ mt_climate_divisions <- mt_counties %>%
   summarise() %>%
   sf::st_union(by_feature = TRUE) %>%
   dplyr::arrange(`Division code`) %>%
-  dplyr::ungroup()
+  dplyr::ungroup() %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
 
 mt_counties_simple <- mt_counties %>%
   rmapshaper::ms_simplify() %>%
-  magrittr::set_names(names(mt_counties))
+  magrittr::set_names(names(mt_counties)) %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
 
 mt_climate_divisions_simple <- mt_counties_simple %>%
   dplyr::select(`Division`,
@@ -128,7 +109,19 @@ mt_climate_divisions_simple <- mt_counties_simple %>%
   summarise() %>%
   sf::st_union(by_feature = TRUE) %>%
   dplyr::arrange(`Division code`) %>%
-  dplyr::ungroup()
+  dplyr::ungroup() %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
+
+mt_state <- mt_counties %>%
+  sf::st_union() %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
+
+mt_state_simple <- mt_counties_simple %>%
+  sf::st_union() %>%
+  tibble::as_tibble() %>%
+  sf::st_as_sf()
 
 ## Generate a hillshade for statewide mapping
 aggregate_longlat <- function(x, res, fun = 'mean'){
@@ -243,6 +236,8 @@ mt_watersheds_simple <- mt_watersheds %>%
   magrittr::set_names(names(mt_watersheds))
 
 devtools::use_data(mt_state_plane, overwrite = T)
+devtools::use_data(mt_state, overwrite = T)
+devtools::use_data(mt_state_simple, overwrite = T)
 devtools::use_data(mt_counties, overwrite = T)
 devtools::use_data(mt_counties_simple, overwrite = T)
 devtools::use_data(mt_climate_divisions, overwrite = T)

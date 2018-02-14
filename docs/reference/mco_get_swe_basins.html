@@ -134,41 +134,9 @@ Defaults to 3.</p></td>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>mco_get_swe_basins</span>()</div><div class='output co'>#&gt; <span class='message'>Parsed with column specification:</span>
-#&gt; <span class='message'>cols(</span>
-#&gt; <span class='message'>  station = col_character(),</span>
-#&gt; <span class='message'>  `1` = col_integer(),</span>
-#&gt; <span class='message'>  `2` = col_integer(),</span>
-#&gt; <span class='message'>  `3` = col_integer(),</span>
-#&gt; <span class='message'>  `4` = col_integer(),</span>
-#&gt; <span class='message'>  `5` = col_integer(),</span>
-#&gt; <span class='message'>  `6` = col_integer()</span>
-#&gt; <span class='message'>)</span></div><div class='output co'>#&gt; <span class='message'>Parsed with column specification:</span>
-#&gt; <span class='message'>cols(</span>
-#&gt; <span class='message'>  `Station Id` = col_integer(),</span>
-#&gt; <span class='message'>  `Snow Water Equivalent (in) Start of Day Values` = col_double(),</span>
-#&gt; <span class='message'>  `Median Snow Water Equivalent (1981-2010) (in) Start of Day Values` = col_double()</span>
-#&gt; <span class='message'>)</span></div><div class='output co'>#&gt; <span class='message'>Joining, by = "WBD code"</span></div><div class='output co'>#&gt; <span class='warning'>Warning: attribute variables are assumed to be spatially constant throughout all geometries</span></div><div class='output co'>#&gt; Simple feature collection with 11 features and 6 fields
-#&gt; geometry type:  GEOMETRY
-#&gt; dimension:      XY
-#&gt; bbox:           xmin: 111853.5 ymin: 17706.01 xmax: 976831.2 ymax: 547983.7
-#&gt; epsg (SRID):    102300
-#&gt; proj4string:    +proj=lcc +lat_1=45 +lat_2=49 +lat_0=44.25 +lon_0=-109.5 +x_0=600000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs
-#&gt; # A tibble: 11 x 7
-#&gt;    `WBD code` Watershed       `Stations Count` `SWE (in)` `SWE 1981-2010 Media…
-#&gt;    &lt;chr&gt;      &lt;fct&gt;                      &lt;int&gt;      &lt;dbl&gt;                 &lt;dbl&gt;
-#&gt;  1 100200     Missouri Headw…               45      575                   484  
-#&gt;  2 100301     Upper Missouri                16      226                   146  
-#&gt;  3 100302     Marias                         4       64.6                  40.4
-#&gt;  4 100401     Fort Peck Lake                 6       61.6                  42.8
-#&gt;  5 100402     Musselshell                    7       86.7                  58.8
-#&gt;  6 100700     Upper Yellowst…               34      724                   423  
-#&gt;  7 100800     Big Horn                      36      417                   295  
-#&gt;  8 100901     Tongue                         6       66.3                  55.3
-#&gt;  9 100902     Powder                        10       91.8                  62.0
-#&gt; 10 170101     Kootenai                      13      279                   236  
-#&gt; 11 170102     Pend Oreille                  70     1509                  1126  
-#&gt; # ... with 2 more variables: `Percent SWE` &lt;dbl&gt;, geometry &lt;sf_geometry [m]&gt;</div></pre>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='fu'>mco_get_swe_basins</span>()
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

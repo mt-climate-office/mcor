@@ -9,28 +9,30 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' library(ggplot2)
 #'
 #' ggplot(mt_counties_simple) +
 #'   geom_sf(aes(fill = Division),
 #'               color = "white") +
 #'   mco_theme_map()
+#'   }
 mco_theme_map <- function(base_size = 9, base_family = ""){
   ggplot2::theme_bw(base_size = base_size, base_family = base_family) %+replace%
     ggplot2::theme(axis.line = ggplot2::element_blank(),
-          axis.text = ggplot2::element_blank(),
-          axis.ticks = ggplot2::element_blank(),
-          axis.title = ggplot2::element_blank(),
-          panel.background = ggplot2::element_blank(),
-          panel.border = ggplot2::element_blank(),
-          panel.grid = ggplot2::element_blank(),
-          panel.grid.major = ggplot2::element_line(colour = 'transparent'),
-          panel.grid.minor = ggplot2::element_line(colour = 'transparent'),
-          panel.spacing = ggplot2::unit(0,"lines"),
-          legend.justification = c(0,0),
-          legend.position = c(-0.02,0),
-          legend.background = ggplot2::element_blank(),
-          plot.background = ggplot2::element_blank(),
-          plot.margin = ggplot2::margin(0,0,0,10)
+                   axis.text = ggplot2::element_blank(),
+                   axis.ticks = ggplot2::element_blank(),
+                   axis.title = ggplot2::element_blank(),
+                   panel.background = ggplot2::element_blank(),
+                   panel.border = ggplot2::element_blank(),
+                   panel.grid = ggplot2::element_blank(),
+                   panel.grid.major = ggplot2::element_line(colour = 'transparent'),
+                   panel.grid.minor = ggplot2::element_line(colour = 'transparent'),
+                   panel.spacing = ggplot2::unit(0,"lines"),
+                   legend.justification = c(0,0),
+                   legend.position = c(-0.02,0),
+                   legend.background = ggplot2::element_blank(),
+                   plot.background = ggplot2::element_blank(),
+                   plot.margin = ggplot2::margin(0,0,0,10)
     )
 }

@@ -1,3 +1,22 @@
+utils::globalVariables(c("mt_state_plane",
+                         "Start Date",
+                         "Station Id",
+                         "State Code",
+                         "Network Code",
+                         "station",
+                         "WBD code",
+                         "mt_watersheds_simple",
+                         "Hydrologic Unit",
+                         "Snow Water Equivalent (in) Start of Day Values",
+                         "Median Snow Water Equivalent (1981-2010) (in) Start of Day Values",
+                         "n",
+                         "Stations Count",
+                         "SWE (in)",
+                         "SWE 1981-2010 Median (in)",
+                         "mt_counties_simple",
+                         "m",
+                         "Watershed"))
+
 #' Download and process the Montana SNOTEL Snow Water Equivalent dataset from the
 #' NRCS National Water and Climate Center
 #'
@@ -18,9 +37,11 @@
 #' * **Percent SWE** — `SWE (in)` / `SWE 1981-2010 Median (in)`
 #'
 #' @export
-#' @importFrom magrittr %>%
+#' @importFrom magrittr %>% %$%
 #' @examples
+#' \dontrun{
 #' mco_get_swe_basins()
+#' }
 mco_get_swe_basins <- function(date = "latest",
                                huc = 6,
                                min_stations = 3){
@@ -50,7 +71,7 @@ mco_get_swe_basins <- function(date = "latest",
                                        `Start Date` = readr::col_date(format = "")
                                      ),
                                      comment = "#")) %>%
-    na.omit() %>%
+    stats::na.omit() %>%
     sf::st_as_sf(coords = c("Longitude","Latitude"),
                  crs = 4326) %>%
     sf::st_transform(mt_state_plane) %>%
@@ -72,7 +93,7 @@ mco_get_swe_basins <- function(date = "latest",
                                      `WBD code`)) %>%
     dplyr::distinct() %>%
     dplyr::left_join(snotel_inventory,
-              by = "station")
+                     by = "station")
 
   # https://wcc.sc.egov.usda.gov/reportGenerator/
   snotel_data <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
@@ -91,8 +112,8 @@ mco_get_swe_basins <- function(date = "latest",
 
   out <- snotel_inventory %>%
     dplyr::left_join(snotel_data,
-              by = c("Station Id")) %>%
-    na.omit() %>%
+                     by = c("Station Id")) %>%
+    stats::na.omit() %>%
     dplyr::select(`WBD code`,
                   `Snow Water Equivalent (in) Start of Day Values`,
                   `Median Snow Water Equivalent (1981-2010) (in) Start of Day Values`) %>%

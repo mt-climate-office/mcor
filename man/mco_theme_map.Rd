@@ -15,10 +15,12 @@ mco_theme_map(base_size = 9, base_family = "")
 A \strong{ggplot2} theme that is good for displaying maps from \link[ggplot2:ggsf]{ggplot2::geom_sf}.
 }
 \examples{
+\dontrun{
 library(ggplot2)
 
 ggplot(mt_counties_simple) +
   geom_sf(aes(fill = Division),
               color = "white") +
   mco_theme_map()
+  }
 }

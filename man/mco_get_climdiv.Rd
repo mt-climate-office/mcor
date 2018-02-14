@@ -40,5 +40,7 @@ A named data frame containing the climate division data.
 Download the US Climate Division Dataset for Montana
 }
 \examples{
+\dontrun{
 mco_get_climdiv("pcpn")
+}
 }

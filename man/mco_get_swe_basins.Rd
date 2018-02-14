@@ -34,5 +34,7 @@ Download and process the Montana SNOTEL Snow Water Equivalent dataset from the
 NRCS National Water and Climate Center
 }
 \examples{
+\dontrun{
 mco_get_swe_basins()
+}
 }

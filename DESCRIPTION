@@ -25,7 +25,9 @@ Imports: plotly,
     purrr,
     readr,
     stringr,
-    tidyr
+    tidyr,
+    rhdf5,
+    smapr
 Suggests: testthat,
     covr,
     knitr,

@@ -1,3 +1,9 @@
+utils::globalVariables(c("State code",
+                         "Division code",
+                         "Element",
+                         "Year",
+                         "Month"))
+
 #' Download the US Climate Division Dataset for Montana
 #'
 #' @param elements A character vector of elements to extract.\cr
@@ -28,7 +34,9 @@
 #' @export
 #' @importFrom magrittr %>%
 #' @examples
+#' \dontrun{
 #' mco_get_climdiv("pcpn")
+#' }
 mco_get_climdiv <- function(elements = c("pcpn","tmpc")){
   procdate <- readr::read_lines("ftp://ftp.ncdc.noaa.gov/pub/data/cirs/climdiv/procdate.txt")
 
@@ -65,15 +73,15 @@ mco_get_climdiv <- function(elements = c("pcpn","tmpc")){
                                      "dv-v1.0.0-",
                                      procdate),
                       col_positions = readr::fwf_positions(start = c(seq(1,7,2),
-                                                              seq(11,88,7)),
-                                                    end = c(seq(2,6,2),
-                                                            10,
-                                                            seq(17,94,7)),
-                                                    col_names = c("State code",
-                                                                  "Division code",
-                                                                  "Element",
-                                                                  "Year",
-                                                                  1:12)),
+                                                                     seq(11,88,7)),
+                                                           end = c(seq(2,6,2),
+                                                                   10,
+                                                                   seq(17,94,7)),
+                                                           col_names = c("State code",
+                                                                         "Division code",
+                                                                         "Element",
+                                                                         "Year",
+                                                                         1:12)),
                       col_types = "cccidddddddddddd") %>%
         dplyr::filter(`State code` == "24") %>% # Montana's state code
         dplyr::select(-`State code`) %>%

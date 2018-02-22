@@ -27,9 +27,16 @@ Imports: plotly,
     stringr,
     tidyr,
     rhdf5,
-    smapr
+    smapr,
+    xml2,
+    httr,
+    lubridate,
+    methods,
+    ncdf4,
+    units
 Suggests: testthat,
     covr,
     knitr,
     rmarkdown
+Remotes: github::bocinsky/thredds
 VignetteBuilder: knitr

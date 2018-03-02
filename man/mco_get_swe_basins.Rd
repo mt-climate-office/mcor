@@ -24,8 +24,8 @@ A simple feature collection with 9 fields:
 \item \strong{WBD code} — the WBD identifier
 \item \strong{Watershed} — the WBD watershed name
 \item \strong{Stations} — the count of stations aggregated to generate a value for the watershed
-\item \strong{SWE (in)} — the Snow Water Equivalent (in) start of day values
-\item \strong{SWE 1981-2010 Median (in)} — the median Snow Water Equivalent (1981-2010) (in) start of day values
+\item \strong{SWE (in)} — the mean of Snow Water Equivalent (in) start of day values of stations in the watershed
+\item \strong{SWE 1981-2010 Median (in)} — the mean of normal (1981-2010) median Snow Water Equivalent (in) start of day values of stations in the watershed
 \item \strong{Percent SWE} — \code{SWE (in)} / \code{SWE 1981-2010 Median (in)}
 }
 }

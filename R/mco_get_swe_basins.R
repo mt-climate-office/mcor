@@ -32,8 +32,8 @@ utils::globalVariables(c("mt_state_plane",
 #' * **WBD code** — the WBD identifier
 #' * **Watershed** — the WBD watershed name
 #' * **Stations** — the count of stations aggregated to generate a value for the watershed
-#' * **SWE (in)** — the Snow Water Equivalent (in) start of day values
-#' * **SWE 1981-2010 Median (in)** — the median Snow Water Equivalent (1981-2010) (in) start of day values
+#' * **SWE (in)** — the mean of Snow Water Equivalent (in) start of day values of stations in the watershed
+#' * **SWE 1981-2010 Median (in)** — the mean of normal (1981-2010) median Snow Water Equivalent (in) start of day values of stations in the watershed
 #' * **Percent SWE** — `SWE (in)` / `SWE 1981-2010 Median (in)`
 #'
 #' @export
@@ -119,8 +119,8 @@ mco_get_swe_basins <- function(date = "latest",
                   `Median Snow Water Equivalent (1981-2010) (in) Start of Day Values`) %>%
     dplyr::group_by(`WBD code`) %>%
     dplyr::summarise(`Stations Count` = n(),
-                     `SWE (in)` = sum(`Snow Water Equivalent (in) Start of Day Values`),
-                     `SWE 1981-2010 Median (in)` = sum(`Median Snow Water Equivalent (1981-2010) (in) Start of Day Values`)) %>%
+                     `SWE (in)` = mean(`Snow Water Equivalent (in) Start of Day Values`),
+                     `SWE 1981-2010 Median (in)` = mean(`Median Snow Water Equivalent (1981-2010) (in) Start of Day Values`)) %>%
     dplyr::filter(`Stations Count` >= min_stations) %>%
     dplyr::mutate(`Percent SWE` = round(100 * `SWE (in)`/`SWE 1981-2010 Median (in)`)) %>%
     dplyr::left_join(mt_watersheds_simple) %>%

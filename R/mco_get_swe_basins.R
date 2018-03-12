@@ -46,34 +46,11 @@ mco_get_swe_basins <- function(date = "latest",
                                huc = 6,
                                min_stations = 3){
 
-  if(date == "latest") date <- "0"
+  if(is.character(date) && date == "latest")
+    date <- Sys.Date()
 
   snotel_inventory <-
-    suppressWarnings(readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
-                                            "network=%22SNTL%22",
-                                            "%20AND%20",
-                                            "outServiceDate=%222100-01-01%22",
-                                            "%7Cname/",date,",",date,"/stationId,",
-                                            "name,",
-                                            "state.code,",
-                                            "network.code,",
-                                            "latitude,",
-                                            "longitude,",
-                                            "inServiceDate",
-                                            "?fitToScreen=false"),
-                                     col_types = readr::cols(
-                                       `Station Id` = readr::col_integer(),
-                                       `Station Name` = readr::col_character(),
-                                       `State Code` = readr::col_character(),
-                                       `Network Code` = readr::col_character(),
-                                       Latitude = readr::col_double(),
-                                       Longitude = readr::col_double(),
-                                       `Start Date` = readr::col_date(format = "")
-                                     ),
-                                     comment = "#")) %>%
-    stats::na.omit() %>%
-    sf::st_as_sf(coords = c("Longitude","Latitude"),
-                 crs = 4326) %>%
+    mco_get_snotel_inventory(date = date) %>%
     sf::st_transform(mt_state_plane) %>%
     dplyr::filter(`Start Date` <= as.Date("1981-01-01")) %>%
     dplyr::mutate(station = paste0(`Station Id`,":",
@@ -108,7 +85,13 @@ mco_get_swe_basins <- function(date = "latest",
                                         "WTEQ::value,",
                                         "WTEQ::median_1981,",
                                         "?fitToScreen=false"),
-                                 comment = "#")
+                                 comment = "#",
+                                 col_types = readr::cols(
+                                   `Date` = readr::col_date(format = ""),
+                                   `Station Id` = readr::col_integer(),
+                                   `Snow Water Equivalent (in) Start of Day Values` = readr::col_double(),
+                                   `Median Snow Water Equivalent (1981-2010) (in) Start of Day Values` = readr::col_double()
+                                 ))
 
   out <- snotel_inventory %>%
     dplyr::left_join(snotel_data,

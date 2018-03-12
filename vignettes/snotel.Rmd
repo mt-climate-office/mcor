@@ -1,0 +1,172 @@
+---
+title: "SNOTEL Analysis"
+author: "Kyle Bocinsky"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+%\VignetteIndexEntry{Vignette Title}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This is just a brief example of one of the `mcor` package's capabilities---namely, accessing and processing the SNOTEL dataset from the Natural Resources Conservation Service of the USDA. In this vignette, we'll create a map-based dashboard for the SNOTEL sites. We will:
+
+- Download the locations and metadata of all SNOTEL sites in Montana
+- Download the normal data record for each station
+- Download the most recent season's data for each station
+- Map the stations on a leaflet map
+- Graph the SWE accumulation in a Plotly popup
+
+## Accessing the SNOTEL data
+```{r snotel-data}
+library(magrittr)
+library(tidyverse)
+library(sf)
+library(leaflet)
+
+snotel_inventory <- mco_get_snotel_inventory() %>%
+  dplyr::filter(`State Code` == "MT") %>%
+  dplyr::filter(`Start Date` <= as.Date("1981-01-01")) %>%
+  dplyr::mutate(station = paste0(`Station Id`,":",
+                                 `State Code`,":",
+                                 `Network Code`))
+
+leaflet::leaflet(width = "100%", 
+                 height = "100%") %>%
+  leaflet::addProviderTiles("OpenTopoMap", group = "Topo") %>%
+  leaflet::addProviderTiles("OpenStreetMap.BlackAndWhite", group = "OpenStreetMap") %>%
+  leaflet::addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
+  leaflet::addProviderTiles("Stamen.TonerLines",
+                            group = "Satellite"
+  ) %>%
+  leaflet::addProviderTiles("Stamen.TonerLabels",
+                            group = "Satellite"
+  ) %>%
+  leaflet::addCircleMarkers(data = snotel_inventory,
+                            label = ~htmltools::htmlEscape(`Station Name`),
+                            radius = 5,
+                            stroke = FALSE,
+                            fillOpacity = 0.75,
+                            col = "white") %>%
+  leaflet::addLayersControl(
+    baseGroups = c("Topo",
+                   "OpenStreetMap",
+                   "Satellite"),
+    options = leaflet::layersControlOptions(collapsed = FALSE),
+    position = "topleft"
+  )
+
+
+snotel_normals <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
+                                         paste0(snotel_inventory$station %>% unique,
+                                                collapse = "%7C"),
+                                         "%7C","state=%22MT%22",
+                                         "%20AND%20",
+                                         "network=%22SNTL%22",
+                                         "%20AND%20element=%22WTEQ%22",
+                                         "%20AND%20outServiceDate=%222100-01-01%22",
+                                         "%7Cname/","1981-01-01",",","2010-12-31","/stationId,",
+                                         "WTEQ::value,",
+                                         "?fitToScreen=false"),
+                                  comment = "#",
+                                  col_types = readr::cols(
+                                    `Date` = readr::col_date(format = ""),
+                                    `Station Id` = readr::col_integer(),
+                                    `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
+                                  )) %>%
+  dplyr::mutate(`Station Id` = factor(`Station Id`)) %>%
+  dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
+
+snotel_normals_quantiles <- snotel_normals %>%
+  dplyr::mutate(Date = lubridate::yday(Date) %>% 
+                  as.integer() %>%
+                  magrittr::subtract(273),
+                Date = ifelse(Date <= 0, Date+365, Date)) %>%
+  dplyr::group_by(Date,`Station Id`) %>%
+  dplyr::arrange(Date,`Station Id`) %>%
+  dplyr::summarise(mean = mean(SWE, na.rm = TRUE),
+                   `0%` = quantile(SWE, probs = 0, na.rm = TRUE),
+                   `10%` = quantile(SWE, probs = 0.1, na.rm = TRUE),
+                   `30%` = quantile(SWE, probs = 0.3, na.rm = TRUE),
+                   `50%` = quantile(SWE, probs = 0.5, na.rm = TRUE),
+                   `70%` = quantile(SWE, probs = 0.7, na.rm = TRUE),
+                   `90%` = quantile(SWE, probs = 0.9, na.rm = TRUE),
+                   `100%` = quantile(SWE, probs = 1, na.rm = TRUE))
+
+snotel_2018 <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
+                                      paste0(snotel_inventory$station %>% unique,
+                                             collapse = "%7C"),
+                                      "%7C","state=%22MT%22",
+                                      "%20AND%20",
+                                      "network=%22SNTL%22",
+                                      "%20AND%20element=%22WTEQ%22",
+                                      "%20AND%20outServiceDate=%222100-01-01%22",
+                                      "%7Cname/","2017-10-01",",",Sys.Date(),"/stationId,",
+                                      "WTEQ::value,",
+                                      "?fitToScreen=false"),
+                               comment = "#",
+                               col_types = readr::cols(
+                                 `Date` = readr::col_date(format = ""),
+                                 `Station Id` = readr::col_integer(),
+                                 `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
+                               )) %>%
+  dplyr::mutate(`Station Id` = factor(`Station Id`),
+                Date = lubridate::yday(Date) %>% 
+                  as.integer() %>%
+                  magrittr::subtract(273),
+                Date = ifelse(Date <= 0, Date+365, Date)) %>%
+  dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
+
+
+snotel_2018_test <- snotel_2018 %>%
+  dplyr::filter(`Station Id` == 328)
+
+snotel_normals_quantiles_test <- snotel_normals_quantiles %>%
+  dplyr::filter(`Station Id` == 328)
+
+dowy <- length(snotel_2018_test$SWE %>% na.omit())
+
+snotel_2018_test %<>%
+  dplyr::right_join(snotel_normals_quantiles_test,
+                   by = c("Date","Station Id")) %>%
+  dplyr::mutate(`0% NEP` = `0%` + (SWE[dowy]-`0%`[dowy]))
+
+
+(snotel_2018_test %>%
+  dplyr::ungroup() %>%
+  ggplot(aes(x = Date)) +
+  geom_ribbon(aes(ymin = `0%`,
+                  ymax = `100%`),
+              fill = "grey80") +
+  geom_ribbon(aes(ymin = `10%`,
+                  ymax = `90%`),
+              fill = "grey65") + 
+  geom_ribbon(aes(ymin = `30%`,
+                  ymax = `70%`),
+              fill = "grey50") +
+  geom_line(aes(y = `50%`),
+            color = "black") +
+    geom_line(aes(y = `mean`),
+            color = "black",
+            linetype = 3) +
+  geom_line(aes(y = SWE),
+            color = "red",
+            size = 1) +
+      # geom_line(aes(y = `0% NEP`),
+      #       color = "dodgerblue",
+      #       size = 1) +
+    ylab("Snow Water Equivalent (in)")) %>%
+  plotly::ggplotly()
+
+
+
+```

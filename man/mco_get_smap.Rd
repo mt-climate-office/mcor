@@ -4,7 +4,8 @@
 \alias{mco_get_smap}
 \title{Download the NASA Soil Moisture Active Passive (SMAP) data for Montana}
 \usage{
-mco_get_smap(id = "SPL4SMGP", dates = "latest", raw_dir = NULL)
+mco_get_smap(id = "SPL4SMGP", group = "Geophysical_Data",
+  name = "sm_rootzone", dates = "latest", raw_dir = NULL)
 }
 \arguments{
 \item{id}{A character vector of SMAP dataset to extract.\cr

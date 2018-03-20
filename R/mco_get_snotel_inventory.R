@@ -20,12 +20,14 @@ utils::globalVariables(c("mt_state_plane",
 #' Download and process the Montana SNOTEL site inventory from the
 #' NRCS National Water and Climate Center
 #'
-#' @return A simple feature collection with 4 fields:
+#' @return A simple feature collection with 6 fields:
 #' * **Station Id** — the SNOTEL station identification number
 #' * **Station Name** — the SNOTEL station location name
 #' * **State Code** — the two letter state code
 #' * **`Network Code`** — the code for the station network
-#' * **Start Date** — the date the stations started recording data
+#' * **Start Date** — the date the station started recording data
+#' * **End Date** — the date the station stopped recording data.
+#' Will be "2100-01-01" if station is still recording.
 #'
 #' @export
 #' @importFrom magrittr %>% %$%
@@ -33,20 +35,22 @@ utils::globalVariables(c("mt_state_plane",
 #' \dontrun{
 #' mco_get_snotel_inventory()
 #' }
-mco_get_snotel_inventory <- function(date = Sys.Date()){
+mco_get_snotel_inventory <- function(){
 
-  suppressWarnings(readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
-                                            "network=%22SNTL%22",
-                                            "%20AND%20",
-                                            "outServiceDate=%222100-01-01%22",
-                                            "%7Cname/",date,",",date,"/stationId,",
-                                            "name,",
-                                            "state.code,",
-                                            "network.code,",
-                                            "latitude,",
-                                            "longitude,",
-                                            "inServiceDate",
-                                            "?fitToScreen=false"),
+  date <- Sys.Date()
+
+  suppressWarnings(readr::read_csv(stringr::str_c('https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/',
+                                          'network="SNTL"|name','/',
+                                          date,',',date,'/',
+                                          stringr::str_c(c('stationId',
+                                                         'name',
+                                                         'state.code',
+                                                         'network.code',
+                                                         'latitude',
+                                                         'longitude',
+                                                         'inServiceDate',
+                                                         'outServiceDate'),
+                                                         collapse = ',')),
                                      col_types = readr::cols(
                                        `Station Id` = readr::col_integer(),
                                        `Station Name` = readr::col_character(),
@@ -54,11 +58,16 @@ mco_get_snotel_inventory <- function(date = Sys.Date()){
                                        `Network Code` = readr::col_character(),
                                        Latitude = readr::col_double(),
                                        Longitude = readr::col_double(),
-                                       `Start Date` = readr::col_date(format = "")
+                                       `Start Date` = readr::col_date(format = ""),
+                                       `End Date` = readr::col_date(format = "")
                                      ),
                                      comment = "#")) %>%
     stats::na.omit() %>%
     sf::st_as_sf(coords = c("Longitude","Latitude"),
-                 crs = 4326)
+                 crs = 4326) %>%
+    dplyr::mutate(Station = paste0(`Station Id`,":",
+                                   `State Code`,":",
+                                   `Network Code`)) %>%
+    dplyr::select(`Station`,dplyr::everything())
 
 }

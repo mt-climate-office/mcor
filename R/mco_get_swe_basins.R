@@ -49,53 +49,27 @@ mco_get_swe_basins <- function(date = "latest",
   if(is.character(date) && date == "latest")
     date <- Sys.Date()
 
-  snotel_inventory <-
-    mco_get_snotel_inventory(date = date) %>%
-    sf::st_transform(mt_state_plane) %>%
-    dplyr::filter(`Start Date` <= as.Date("1981-01-01")) %>%
-    dplyr::mutate(station = paste0(`Station Id`,":",
-                                   `State Code`,":",
-                                   `Network Code`))
-
-  snotel_inventory <- suppressWarnings(readr::read_csv("https://www.wcc.nrcs.usda.gov/ftpref/data/water/wcs/gis/data/getdata/hucassociations.csv",
-                                                       col_names = c("station", 1:6))) %>%
-    dplyr::filter(grepl("SNTL",station),
-                  station %in% snotel_inventory$station) %>%
-    tidyr::gather(key = "Priority",
-                  value = "WBD code",
-                  -station) %>%
-    dplyr::mutate(`WBD code` = stringr::str_sub(`WBD code`,1,huc)) %>%
+  snotel_inventory <- mco_get_snotel_inventory() %>%
+    dplyr::left_join(mco_get_snotel_huc() %>%
+                       dplyr::mutate(`WBD code` = stringr::str_sub(`WBD code`,1,huc)) %>%
+                       dplyr::distinct()) %>%
     dplyr::filter(`WBD code` %in% (mt_watersheds_simple %>%
                                      dplyr::filter(`Hydrologic Unit` %in% c(huc)) %$%
                                      `WBD code`)) %>%
-    dplyr::distinct() %>%
-    dplyr::left_join(snotel_inventory,
-                     by = "station")
+    sf::st_transform(mt_state_plane) %>%
+    dplyr::select(-`Station Id`:-`End Date`)
 
-  # https://wcc.sc.egov.usda.gov/reportGenerator/
-  snotel_data <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
-                                        paste0(snotel_inventory$station %>% unique,
-                                               collapse = "%7C"),
-                                        "%7C","state=%22MT%22",
-                                        "%20AND%20",
-                                        "network=%22SNTL%22",
-                                        "%20AND%20element=%22WTEQ%22",
-                                        "%20AND%20outServiceDate=%222100-01-01%22",
-                                        "%7Cname/",date,",",date,"/stationId,",
-                                        "WTEQ::value,",
-                                        "WTEQ::median_1981,",
-                                        "?fitToScreen=false"),
-                                 comment = "#",
-                                 col_types = readr::cols(
-                                   `Date` = readr::col_date(format = ""),
-                                   `Station Id` = readr::col_integer(),
-                                   `Snow Water Equivalent (in) Start of Day Values` = readr::col_double(),
-                                   `Median Snow Water Equivalent (1981-2010) (in) Start of Day Values` = readr::col_double()
-                                 ))
+  snotel_data <- mco_get_snotel_data(stations = snotel_inventory$Station %>%
+                                       unique(),
+                                     variables = c('WTEQ::value',
+                                                   'WTEQ::median_1981'),
+                                     start_date = date,
+                                     end_date = date)
 
-  out <- snotel_inventory %>%
+  snotel_inventory %>%
     dplyr::left_join(snotel_data,
-                     by = c("Station Id")) %>%
+                     by = c("Station")) %>%
+    dplyr::arrange(Station) %>%
     stats::na.omit() %>%
     dplyr::select(`WBD code`,
                   `Snow Water Equivalent (in) Start of Day Values`,
@@ -105,16 +79,12 @@ mco_get_swe_basins <- function(date = "latest",
                      `SWE (in)` = mean(`Snow Water Equivalent (in) Start of Day Values`),
                      `SWE 1981-2010 Median (in)` = mean(`Median Snow Water Equivalent (1981-2010) (in) Start of Day Values`)) %>%
     dplyr::filter(`Stations Count` >= min_stations) %>%
-    dplyr::mutate(`Percent SWE` = round(100 * `SWE (in)`/`SWE 1981-2010 Median (in)`)) %>%
+    dplyr::mutate(`Percent SWE` = round(100 * `SWE (in)`/`SWE 1981-2010 Median (in)`) %>%
+                    as.integer()) %>%
+    sf::st_set_geometry(NULL) %>%
     dplyr::left_join(mt_watersheds_simple) %>%
     sf::st_as_sf() %>%
-    sf::st_intersection(mt_counties_simple %>%
-                          sf::st_union())
-
-  out %>%
-    dplyr::filter((out %>%
-                     sf::st_area()) > units::set_units(5000000, m^2)) %>%
     dplyr::select(-`Hydrologic Unit`) %>%
-    dplyr::select(`WBD code`, Watershed, dplyr::everything()) %>%
-    sf::st_as_sf()
+    dplyr::select(`WBD code`, Watershed, dplyr::everything())
+
 }

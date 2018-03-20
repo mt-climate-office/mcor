@@ -40,6 +40,8 @@ utils::globalVariables(c("mt_state_simple",
 #' mco_get_smap()
 #' }
 mco_get_smap <- function(id = "SPL4SMGP",
+                         group = "Geophysical_Data",
+                         name = "sm_rootzone",
                          dates = "latest",
                          raw_dir = NULL){
 
@@ -53,7 +55,7 @@ https://urs.earthdata.nasa.gov/")
   }
 
   if(is.null(raw_dir)){
-    output_directory <- tempdir()
+    raw_dir <- tempdir()
   }
 
   version <- smapr:::https_prefix() %>%
@@ -79,8 +81,9 @@ https://urs.earthdata.nasa.gov/")
   out %>%
     purrr::map(function(x){
       x %>%
-        rhdf5::h5read(name = "Geophysical_Data/sm_surface_wetness") %>%
-        smapr:::rasterize_matrix(file = x, name = "Geophysical_Data")
+        rhdf5::h5read(name = stringr::str_c(group,"/",name)) %>%
+        smapr:::rasterize_matrix(file = x,
+                                 name = group)
     }) %>%
     raster::brick() %>%
     raster::crop(mt_state_simple %>%

@@ -78,7 +78,7 @@ mco_get_gridmet <- function(x = mt_state %>%
     dplyr::rowwise() %>%
     dplyr::mutate(Filename = thredds::tds_ncss_download(ncss_url = Service,
                                                        bbox = x %>%
-                                                         sf::st_transform(4326) %>%
+                                                         lwgeom::st_transform_proj(4326) %>%
                                                          sf::st_bbox(),
                                                        vars = Variable,
                                                        out_file = stringr::str_c(out_dir,"/",Variable,".nc"),

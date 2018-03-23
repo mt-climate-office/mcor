@@ -15,7 +15,7 @@ mt_state_plane <- sf::st_crs(102300)
 FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip", destdir = "./data-raw")
 unzip("./data-raw/MontanaCounties.zip", exdir = "./data-raw/MontanaCounties")
 mt_counties <- sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County") %>%
-sf::st_transform(mt_state_plane) %>%
+  lwgeom::st_transform_proj(mt_state_plane) %>%
 dplyr::mutate(`State FIPS code` = "30") %>%
 dplyr::select(NAMELABEL,
               `State FIPS code`,
@@ -31,7 +31,7 @@ sf::st_as_sf()
 # unzip("./data-raw/tl_2017_us_county.zip", exdir = "./data-raw/tl_2017_us_county")
 # mt_counties <- sf::st_read("./data-raw/tl_2017_us_county/tl_2017_us_county.shp") %>%
 #   dplyr::filter(STATEFP == "30") %>%
-#   sf::st_transform(mt_state_plane) %>%
+#   lwgeom::st_transform_proj(mt_state_plane) %>%
 #   dplyr::select(NAME,
 #                 STATEFP,
 #                 COUNTYFP,
@@ -65,7 +65,7 @@ mt_climate_divisions <- sf::st_read("./data-raw/CONUS_CLIMATE_DIVISIONS/GIS.OFFI
   dplyr::mutate(`Division` = `Division` %>%
                   tolower() %>%
                   tools::toTitleCase()) %>%
-  sf::st_transform(mt_state_plane)
+  lwgeom::st_transform_proj(mt_state_plane)
 
 mt_counties %<>%
   sf::st_centroid() %>%
@@ -204,7 +204,7 @@ mt_watersheds <- seq(2,10,2) %>%
     return(out)
   }) %>%
   do.call(rbind,.) %>%
-  sf::st_transform(mt_state_plane) %>%
+  lwgeom::st_transform_proj(mt_state_plane) %>%
   tibble::as_tibble() %>%
   sf::st_as_sf()
 
@@ -222,7 +222,7 @@ mt_watersheds <- seq(2,10,2) %>%
 #                                            ordered = TRUE)) %>%
 #   dplyr::rename(Watershed = NAME,
 #                 geometry = Shape) %>%
-#   sf::st_transform(mt_state_plane) %>%
+#   lwgeom::st_transform_proj(mt_state_plane) %>%
 #   tibble::as_tibble() %>%
 #   sf::st_as_sf()
 #

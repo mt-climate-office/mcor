@@ -56,7 +56,7 @@ mco_get_macav2_monthly <- function(x = NULL,
   x_bbox <- x %>%
     sf::st_bbox() %>%
     sf::st_as_sfc() %>%
-    sf::st_transform(4326) %>%
+    lwgeom::st_transform_proj(4326) %>%
     # magrittr::add(c(360,0)) %>%
     sf::st_bbox()
 

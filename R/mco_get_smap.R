@@ -64,11 +64,13 @@ https://urs.earthdata.nasa.gov/")
     stringr::str_extract('[^.]*$') %>%
     as.integer()
 
-  if(dates == "latest"){
-    dates <- suppressWarnings(smapr:::route_to_dates(id, version) %>%
-                                smapr:::get_dir_contents() %>%
-                                lubridate::as_date() %>%
-                                max(na.rm = T))
+  latest_date <- suppressWarnings(smapr:::route_to_dates(id, version) %>%
+                                    smapr:::get_dir_contents() %>%
+                                    lubridate::as_date() %>%
+                                    max(na.rm = T))
+
+  if(dates == "latest" || dates > latest_date){
+    dates <- latest_date
   }
 
   out <- smapr::find_smap(id = id,

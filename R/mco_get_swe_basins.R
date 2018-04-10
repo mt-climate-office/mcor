@@ -15,7 +15,9 @@ utils::globalVariables(c("mt_state_plane",
                          "SWE 1981-2010 Median (in)",
                          "mt_counties_simple",
                          "m",
-                         "Watershed"))
+                         "Watershed",
+                         'End Date',
+                         'Station'))
 
 #' Download and process the Montana SNOTEL Snow Water Equivalent dataset from the
 #' NRCS National Water and Climate Center

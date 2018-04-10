@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 <img src="https://climate.umt.edu/imx/MCO-Logo-Footer.png" alt="The Montana Climate Office Logo" style="width: 300px;"/><br>
 
-The [Montana Climate Office](https://climate.umt.edu/) is an independent state-designated body that provides Montanans with high-quality, timely, relevant, and scientifically based climate information and services. The **`mcor`** package is the base *R* package for the Montana Climate Office *R* products. It contains useful data such as county and climate division maps, as well as commonly used functions including standard web and print map templates.
+The [Montana Climate Office](https://climate.umt.edu/) is an independent state-designated body that provides Montanans with high-quality, timely, relevant, and scientifically based climate information and services. The **`mcor`** package is the base *R* package for the Montana Climate Office *R* products. It contains useful data such as county and climate division maps, data download tools for commonly used datasets, and convenience functions including standard web and print map templates.
 
 ## Installation
 

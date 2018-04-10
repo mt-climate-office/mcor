@@ -14,7 +14,7 @@ LazyData: true
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
 Depends: R (>= 3.4.0)
-Imports: plotly,
+Imports: 
     ggplot2,
     raster,
     magrittr,
@@ -34,10 +34,15 @@ Imports: plotly,
     lubridate,
     methods,
     ncdf4,
-    units
-Suggests: testthat,
+    units,
+    thredds
+Suggests: 
+    testthat,
     covr,
     knitr,
-    rmarkdown
-Remotes: github::bocinsky/thredds
+    rmarkdown,
+    leaflet,
+    tidyverse,
+    htmltools
+Remotes: github::mt-climate-office/thredds
 VignetteBuilder: knitr

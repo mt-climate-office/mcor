@@ -22,6 +22,8 @@ utils::globalVariables(c("mt_state_simple",
 #' \item{SPL4SMLM}{Surface/Rootzone Soil Moisture Land Model Constants}
 #' \item{SPL4CMDL}{Carbon Net Ecosystem Exchange}
 #' }
+#' @param group The SMAP dataset group name to extract.
+#' @param name The SMAP dataset variable name to extract.
 #' @param dates An object of class Date or a character string formatted as
 #' %Y-%m-%d (e.g., "2016-04-01") which specifies the date(s) to search.
 #' To search for one specific date, this can be a Date object of length one. To

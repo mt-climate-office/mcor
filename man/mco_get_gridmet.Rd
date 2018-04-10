@@ -6,7 +6,7 @@
 \usage{
 mco_get_gridmet(x = mt_state \%>\% sf::st_buffer(10000),
   elements = c("precipitation_amount", "daily_minimum_temperature",
-  "daily_maximum_temperature"), dates = "latest", out_dir)
+  "daily_maximum_temperature"), dates = "latest", out_dir = tempdir())
 }
 \arguments{
 \item{x}{An object of class sf.}
@@ -20,11 +20,7 @@ return data over a time interval, it can be a vector of length 2
 (e.g., c("2018-01-01","2018-03-31")). Use "latest" (the default) to retreive the
 most recent date available product.}
 
-\item{start_date}{An optional date to download.}
-
-\item{date}{An optional date to download.}
-
-\item{raw_dir}{A directory in which to download the raw MACA V2 datasets.
+\item{out_dir}{A directory in which to download the raw MACA V2 datasets.
 Defaults to the current working directory}
 }
 \value{

@@ -1,5 +1,9 @@
 utils::globalVariables(c('.',
-                         'mt_state'))
+                         'mt_state',
+                         'path',
+                         'Service',
+                         'Variable',
+                         'Filename'))
 #' Download select GridMET datasets.
 #'
 #' @param x An object of class sf.
@@ -10,15 +14,14 @@ utils::globalVariables(c('.',
 #' return data over a time interval, it can be a vector of length 2
 #' (e.g., c("2018-01-01","2018-03-31")). Use "latest" (the default) to retreive the
 #' most recent date available product.
-#' @param start_date An optional date to download.
-#' @param date An optional date to download.
-#' @param raw_dir A directory in which to download the raw MACA V2 datasets.
+#' @param out_dir A directory in which to download the raw MACA V2 datasets.
 #' Defaults to the current working directory
 #'
 #' @return A raster brick of the desired MACA V2 datasets.
 #'
 #' @export
 #' @importFrom magrittr %>%
+#' @importFrom raster projection<-
 #' @examples
 #' \dontrun{
 #' test <- mco_get_gridmet()
@@ -32,7 +35,7 @@ mco_get_gridmet <- function(x = mt_state %>%
                                          "daily_minimum_temperature",
                                          "daily_maximum_temperature"),
                             dates = "latest",
-                            out_dir){
+                            out_dir = tempdir()){
 
   if(missing(out_dir)){
     out_dir <- tempfile()

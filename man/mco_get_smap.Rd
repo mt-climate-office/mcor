@@ -20,6 +20,10 @@ mco_get_smap(id = "SPL4SMGP", group = "Geophysical_Data",
 \item{SPL4CMDL}{Carbon Net Ecosystem Exchange}
 }}
 
+\item{group}{The SMAP dataset group name to extract.}
+
+\item{name}{The SMAP dataset variable name to extract.}
+
 \item{dates}{An object of class Date or a character string formatted as
 %Y-%m-%d (e.g., "2016-04-01") which specifies the date(s) to search.
 To search for one specific date, this can be a Date object of length one. To

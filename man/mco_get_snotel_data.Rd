@@ -9,17 +9,17 @@ mco_get_snotel_data(stations = c("1040:CO:SNTL", "619:OR:SNTL",
   "1048:NM:SNTL"), variables = c("stationId", "WTEQ::value"),
   start_date = "POR_BEGIN", end_date = "POR_END")
 }
-\value{
-A simple feature collection with 6 fields:
-\itemize{
-\item \strong{Station Id} — the SNOTEL station identification number
-\item \strong{Station Name} — the SNOTEL station location name
-\item \strong{State Code} — the two letter state code
-\item \strong{\code{Network Code}} — the code for the station network
-\item \strong{Start Date} — the date the station started recording data
-\item \strong{End Date} — the date the station stopped recording data.
-Will be "2100-01-01" if station is still recording.
+\arguments{
+\item{stations}{A character vector of station identifiers in trinomial format (e.g., '1040:CO:SNTL').}
+
+\item{variables}{A character vector of variables to request.}
+
+\item{start_date}{A \link{Date} object as the start date. Defaults to period of record.}
+
+\item{end_date}{A \link{Date} object as the end date. Defaults to period of record.}
 }
+\value{
+A data frame containing the requested variables.
 }
 \description{
 Download and process the Montana SNOTEL site inventory from the
@@ -27,6 +27,6 @@ NRCS National Water and Climate Center
 }
 \examples{
 \dontrun{
-mco_get_snotel_inventory()
+mco_get_snotel_data()
 }
 }

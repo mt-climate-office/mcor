@@ -68,110 +68,110 @@ leaflet::leaflet(width = "100%",
   )
 
 
-snotel_normals <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
-                                         paste0(snotel_inventory$station %>% unique,
-                                                collapse = "%7C"),
-                                         # "%7C","state=%22MT%22",
-                                         # "%20AND%20",
-                                         "network=%22SNTL%22",
-                                         # "%20AND%20element=%22WTEQ%22",
-                                         # "%20AND%20outServiceDate=%222100-01-01%22",
-                                         "%7Cname/","1981-01-01",",","2010-12-31","/stationId,",
-                                         "WTEQ::value,",
-                                         "?fitToScreen=false"),
-                                  comment = "#",
-                                  col_types = readr::cols(
-                                    `Date` = readr::col_date(format = ""),
-                                    `Station Id` = readr::col_integer(),
-                                    `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
-                                  )) %>%
-  dplyr::mutate(`Station Id` = factor(`Station Id`)) %>%
-  dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
-
-snotel_normals_quantiles <- snotel_normals %>%
-  dplyr::mutate(doy = lubridate::yday(Date) %>% 
-                  as.integer()) %>%
-  dplyr::group_by(doy,`Station Id`) %>%
-  dplyr::arrange(doy,`Station Id`) %>%
-  dplyr::summarise(mean = mean(SWE, na.rm = TRUE),
-                   `0%` = quantile(SWE, probs = 0, na.rm = TRUE),
-                   `10%` = quantile(SWE, probs = 0.1, na.rm = TRUE),
-                   `30%` = quantile(SWE, probs = 0.3, na.rm = TRUE),
-                   `50%` = quantile(SWE, probs = 0.5, na.rm = TRUE),
-                   `70%` = quantile(SWE, probs = 0.7, na.rm = TRUE),
-                   `90%` = quantile(SWE, probs = 0.9, na.rm = TRUE),
-                   `100%` = quantile(SWE, probs = 1, na.rm = TRUE)) %>%
-  dplyr::filter(doy != 366)
-
-snotel_2018 <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
-                                      paste0(snotel_inventory$station %>% unique,
-                                             collapse = "%7C"),
-                                      "%7C","state=%22MT%22",
-                                      "%20AND%20",
-                                      "network=%22SNTL%22",
-                                      "%20AND%20element=%22WTEQ%22",
-                                      "%20AND%20outServiceDate=%222100-01-01%22",
-                                      "%7Cname/","2017-10-01",",",Sys.Date(),"/stationId,",
-                                      "WTEQ::value,",
-                                      "?fitToScreen=false"),
-                               comment = "#",
-                               col_types = readr::cols(
-                                 `Date` = readr::col_date(format = ""),
-                                 `Station Id` = readr::col_integer(),
-                                 `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
-                               )) %>%
-  dplyr::mutate(`Station Id` = factor(`Station Id`),
-                doy = lubridate::yday(Date) %>% 
-                  as.integer()) %>%
-  dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
-
-
-snotel_2018_test <- snotel_2018 %>%
-  dplyr::filter(`Station Id` == 328)
-
-snotel_normals_quantiles_test <- snotel_normals_quantiles %>%
-  dplyr::filter(`Station Id` == 328)
-
-# dowy <- length(snotel_2018_test$SWE %>% na.omit())
-
-snotel_2018_test %<>%
-  dplyr::right_join(snotel_normals_quantiles_test,
-                   by = c("doy",
-                          "Station Id")) %>%
-  dplyr::mutate(dowy = doy %>%
-                  magrittr::subtract(273) %>%
-                  ifelse(. <= 0, .+365, .) %>%
-                  as.integer(),
-                Date = as.Date(dowy-1, origin = "2017-10-01")) %>%
-  dplyr::arrange(Date)
-
-(snotel_2018_test %>%
-  dplyr::ungroup() %>%
-  ggplot(aes(x = Date)) +
-  geom_ribbon(aes(ymin = `0%`,
-                  ymax = `100%`),
-              fill = "grey80") +
-  geom_ribbon(aes(ymin = `10%`,
-                  ymax = `90%`),
-              fill = "grey65") + 
-  geom_ribbon(aes(ymin = `30%`,
-                  ymax = `70%`),
-              fill = "grey50") +
-  geom_line(aes(y = `50%`),
-            color = "black") +
-    geom_line(aes(y = `mean`),
-            color = "black",
-            linetype = 3) +
-  geom_line(aes(y = SWE),
-            color = "red",
-            size = 1) +
-      # geom_line(aes(y = `0% NEP`),
-      #       color = "dodgerblue",
-      #       size = 1) +
-    ylab("Snow Water Equivalent (in)") +
-    scale_x_date(labels = function(x) format(x, "%d-%b"))) %>%
-  plotly::ggplotly()
-
+# snotel_normals <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
+#                                          paste0(snotel_inventory$station %>% unique,
+#                                                 collapse = "%7C"),
+#                                          # "%7C","state=%22MT%22",
+#                                          # "%20AND%20",
+#                                          "network=%22SNTL%22",
+#                                          # "%20AND%20element=%22WTEQ%22",
+#                                          # "%20AND%20outServiceDate=%222100-01-01%22",
+#                                          "%7Cname/","1981-01-01",",","2010-12-31","/stationId,",
+#                                          "WTEQ::value,",
+#                                          "?fitToScreen=false"),
+#                                   comment = "#",
+#                                   col_types = readr::cols(
+#                                     `Date` = readr::col_date(format = ""),
+#                                     `Station Id` = readr::col_integer(),
+#                                     `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
+#                                   )) %>%
+#   dplyr::mutate(`Station Id` = factor(`Station Id`)) %>%
+#   dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
+# 
+# snotel_normals_quantiles <- snotel_normals %>%
+#   dplyr::mutate(doy = lubridate::yday(Date) %>% 
+#                   as.integer()) %>%
+#   dplyr::group_by(doy,`Station Id`) %>%
+#   dplyr::arrange(doy,`Station Id`) %>%
+#   dplyr::summarise(mean = mean(SWE, na.rm = TRUE),
+#                    `0%` = quantile(SWE, probs = 0, na.rm = TRUE),
+#                    `10%` = quantile(SWE, probs = 0.1, na.rm = TRUE),
+#                    `30%` = quantile(SWE, probs = 0.3, na.rm = TRUE),
+#                    `50%` = quantile(SWE, probs = 0.5, na.rm = TRUE),
+#                    `70%` = quantile(SWE, probs = 0.7, na.rm = TRUE),
+#                    `90%` = quantile(SWE, probs = 0.9, na.rm = TRUE),
+#                    `100%` = quantile(SWE, probs = 1, na.rm = TRUE)) %>%
+#   dplyr::filter(doy != 366)
+# 
+# snotel_2018 <- readr::read_csv(paste0("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/daily/start_of_period/",
+#                                       paste0(snotel_inventory$station %>% unique,
+#                                              collapse = "%7C"),
+#                                       "%7C","state=%22MT%22",
+#                                       "%20AND%20",
+#                                       "network=%22SNTL%22",
+#                                       "%20AND%20element=%22WTEQ%22",
+#                                       "%20AND%20outServiceDate=%222100-01-01%22",
+#                                       "%7Cname/","2017-10-01",",",Sys.Date(),"/stationId,",
+#                                       "WTEQ::value,",
+#                                       "?fitToScreen=false"),
+#                                comment = "#",
+#                                col_types = readr::cols(
+#                                  `Date` = readr::col_date(format = ""),
+#                                  `Station Id` = readr::col_integer(),
+#                                  `Snow Water Equivalent (in) Start of Day Values` = readr::col_double()
+#                                )) %>%
+#   dplyr::mutate(`Station Id` = factor(`Station Id`),
+#                 doy = lubridate::yday(Date) %>% 
+#                   as.integer()) %>%
+#   dplyr::rename(SWE = `Snow Water Equivalent (in) Start of Day Values`)
+# 
+# 
+# snotel_2018_test <- snotel_2018 %>%
+#   dplyr::filter(`Station Id` == 328)
+# 
+# snotel_normals_quantiles_test <- snotel_normals_quantiles %>%
+#   dplyr::filter(`Station Id` == 328)
+# 
+# # dowy <- length(snotel_2018_test$SWE %>% na.omit())
+# 
+# snotel_2018_test %<>%
+#   dplyr::right_join(snotel_normals_quantiles_test,
+#                    by = c("doy",
+#                           "Station Id")) %>%
+#   dplyr::mutate(dowy = doy %>%
+#                   magrittr::subtract(273) %>%
+#                   ifelse(. <= 0, .+365, .) %>%
+#                   as.integer(),
+#                 Date = as.Date(dowy-1, origin = "2017-10-01")) %>%
+#   dplyr::arrange(Date)
+# 
+# (snotel_2018_test %>%
+#   dplyr::ungroup() %>%
+#   ggplot(aes(x = Date)) +
+#   geom_ribbon(aes(ymin = `0%`,
+#                   ymax = `100%`),
+#               fill = "grey80") +
+#   geom_ribbon(aes(ymin = `10%`,
+#                   ymax = `90%`),
+#               fill = "grey65") + 
+#   geom_ribbon(aes(ymin = `30%`,
+#                   ymax = `70%`),
+#               fill = "grey50") +
+#   geom_line(aes(y = `50%`),
+#             color = "black") +
+#     geom_line(aes(y = `mean`),
+#             color = "black",
+#             linetype = 3) +
+#   geom_line(aes(y = SWE),
+#             color = "red",
+#             size = 1) +
+#       # geom_line(aes(y = `0% NEP`),
+#       #       color = "dodgerblue",
+#       #       size = 1) +
+#     ylab("Snow Water Equivalent (in)") +
+#     scale_x_date(labels = function(x) format(x, "%d-%b"))) %>%
+#   plotly::ggplotly()
+# 
 
 
 ```

@@ -4,7 +4,7 @@
 \alias{mco_theme_map}
 \title{Montana Climate Office theme for maps}
 \usage{
-mco_theme_map(base_size = 9, base_family = "")
+mco_theme_map(base_size = 6.5, base_family = "")
 }
 \arguments{
 \item{base_size}{base font size}

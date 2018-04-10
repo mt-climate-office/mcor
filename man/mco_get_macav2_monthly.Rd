@@ -4,8 +4,8 @@
 \alias{mco_get_macav2_monthly}
 \title{Download select MACA V2 datasets.}
 \usage{
-mco_get_macav2_monthly(x = NULL, elements = NULL, models = NULL,
-  scenarios = NULL, raw_dir = "./")
+mco_get_macav2_monthly(x = mt_state \%>\% sf::st_buffer(10000), elements,
+  models, scenarios, out_dir = tempdir(), ...)
 }
 \arguments{
 \item{x}{An object of class sf.}
@@ -16,8 +16,10 @@ mco_get_macav2_monthly(x = NULL, elements = NULL, models = NULL,
 
 \item{scenarios}{A character vector of representative climate pathways}
 
-\item{raw_dir}{A directory in which to download the raw MACA V2 datasets.
+\item{out_dir}{A directory in which to download the raw MACA V2 datasets.
 Defaults to the current working directory}
+
+\item{...}{Other parameters passed on to \link[thredds:tds_ncss_download]{thredds::tds_ncss_download}.}
 }
 \value{
 A raster brick of the desired MACA V2 datasets.

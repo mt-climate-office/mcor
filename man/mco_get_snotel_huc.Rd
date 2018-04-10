@@ -7,26 +7,11 @@ NRCS National Water and Climate Center}
 \usage{
 mco_get_snotel_huc()
 }
-\arguments{
-\item{date}{A character string of either the date (in yyyy-mm-dd format) or
-"latest" to get the latest records. Defaults to "latest".}
-
-\item{huc}{An integer indicating the Watershed Boundary Hydrological Unit level,
-either "6" or "8", over which to aggregate station data. Defaults to 6.}
-
-\item{min_stations}{An integer indicating the minimum number of stations that
-must be available in a region in order to calculate a regional average SWE.
-Defaults to 3.}
-}
 \value{
-A simple feature collection with 9 fields:
+A data_frame with 2 fields:
 \itemize{
-\item \strong{WBD code} — the WBD identifier
-\item \strong{Watershed} — the WBD watershed name
-\item \strong{Stations} — the count of stations aggregated to generate a value for the watershed
-\item \strong{SWE (in)} — the mean of Snow Water Equivalent (in) start of day values of stations in the watershed
-\item \strong{SWE 1981-2010 Median (in)} — the mean of normal (1981-2010) median Snow Water Equivalent (in) start of day values of stations in the watershed
-\item \strong{Percent SWE} — \code{SWE (in)} / \code{SWE 1981-2010 Median (in)}
+\item \strong{Station} — the station identifier in trinomial format.
+\item \strong{WBD code} — the WBD watershed code
 }
 }
 \description{
@@ -35,6 +20,6 @@ NRCS National Water and Climate Center
 }
 \examples{
 \dontrun{
-mco_get_swe_basins()
+mco_get_snotel_huc()
 }
 }

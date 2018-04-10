@@ -15,8 +15,8 @@ state-designated body that provides Montanans with high-quality, timely,
 relevant, and scientifically based climate information and services. The
 **`mcor`** package is the base *R* package for the Montana Climate
 Office *R* products. It contains useful data such as county and climate
-division maps, as well as commonly used functions including standard web
-and print map templates.
+division maps, data download tools for commonly used datasets, and
+convenience functions including standard web and print map templates.
 
 ## Installation
 

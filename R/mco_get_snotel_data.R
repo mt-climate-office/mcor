@@ -15,25 +15,24 @@ utils::globalVariables(c("mt_state_plane",
                          "SWE 1981-2010 Median (in)",
                          "mt_counties_simple",
                          "m",
-                         "Watershed"))
+                         "Watershed",
+                         'Station'))
 
 #' Download and process the Montana SNOTEL site inventory from the
 #' NRCS National Water and Climate Center
 #'
-#' @return A simple feature collection with 6 fields:
-#' * **Station Id** — the SNOTEL station identification number
-#' * **Station Name** — the SNOTEL station location name
-#' * **State Code** — the two letter state code
-#' * **`Network Code`** — the code for the station network
-#' * **Start Date** — the date the station started recording data
-#' * **End Date** — the date the station stopped recording data.
-#' Will be "2100-01-01" if station is still recording.
+#' @param stations A character vector of station identifiers in trinomial format (e.g., '1040:CO:SNTL').
+#' @param variables A character vector of variables to request.
+#' @param start_date A [Date] object as the start date. Defaults to period of record.
+#' @param end_date A [Date] object as the end date. Defaults to period of record.
+#'
+#' @return A data frame containing the requested variables.
 #'
 #' @export
 #' @importFrom magrittr %>% %$%
 #' @examples
 #' \dontrun{
-#' mco_get_snotel_inventory()
+#' mco_get_snotel_data()
 #' }
 mco_get_snotel_data <- function(stations = c("1040:CO:SNTL",
                                              "619:OR:SNTL",
@@ -64,7 +63,9 @@ mco_get_snotel_data <- function(stations = c("1040:CO:SNTL",
     dplyr::mutate(Station = paste0(`Station Id`,":",
                                    `State Code`,":",
                                    `Network Code`)) %>%
-    dplyr::select(-`Station Id`:-`Network Code`) %>%
+    dplyr::select(-`Station Id`,
+                  -`State Code`,
+                  -`Network Code`) %>%
     dplyr::select(Station, dplyr::everything())
 
 }

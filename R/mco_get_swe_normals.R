@@ -15,10 +15,15 @@ utils::globalVariables(c("mt_state_plane",
                          "SWE 1981-2010 Median (in)",
                          "mt_counties_simple",
                          "m",
-                         "Watershed"))
+                         "Watershed",
+                         "Date",
+                         "DOY",
+                         "Station"))
 
 #' Download and process the Montana SNOTEL site inventory from the
 #' NRCS National Water and Climate Center
+#'
+#' @param stations A character vector of station identifiers in trinomial format (e.g., '1040:CO:SNTL').
 #'
 #' @return A simple feature collection with 4 fields:
 #' * **Station Id** — the SNOTEL station identification number
@@ -28,12 +33,13 @@ utils::globalVariables(c("mt_state_plane",
 #' * **Start Date** — the date the stations started recording data
 #'
 #' @export
-#' @importFrom magrittr %>% %$%
+#' @importFrom magrittr  %<>% %>% %$%
+#' @importFrom stats quantile
 #' @examples
 #' \dontrun{
-#' mco_calc_swe_normals()
+#' mco_get_swe_normals()
 #' }
-mco_calc_swe_normals <- function(stations = NULL){
+mco_get_swe_normals <- function(stations = NULL){
 
 
   if(is.null(stations))

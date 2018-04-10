@@ -15,7 +15,8 @@ utils::globalVariables(c("mt_state_plane",
                          "SWE 1981-2010 Median (in)",
                          "mt_counties_simple",
                          "m",
-                         "Watershed"))
+                         "Watershed",
+                         'Station'))
 
 #' Download and process the Montana SNOTEL site inventory from the
 #' NRCS National Water and Climate Center

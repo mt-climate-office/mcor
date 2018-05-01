@@ -126,7 +126,7 @@ mco_get_gridmet <- function(x = mt_state %>%
 
                   out %>%
                     readr::write_rds(stringr::str_c(out_dir,"/",name,".Rds"),
-                                     compress = "gzip")
+                                     compress = "gz")
                 }
 
                 readr::read_rds(stringr::str_c(out_dir,"/",name,".Rds"))

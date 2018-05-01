@@ -54,7 +54,7 @@ mco_get_gridmet_normals <-
 
         }) %>%
         readr::write_rds(stringr::str_c(out_dir,"/gridmet_normals.Rds"),
-                         compress = "gzip")
+                         compress = "gz")
     }
 
     readr::read_rds(stringr::str_c(out_dir,"/gridmet_normals.Rds"))

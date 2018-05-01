@@ -16,6 +16,8 @@ utils::globalVariables(c('.',
 #' most recent date available product.
 #' @param out_dir A directory in which to download the raw MACA V2 datasets.
 #' Defaults to the current working directory
+#' @param overwrite Whether to overwrite a file in the out_dir of the same element.
+#' @param ... Other parameters passed on to thredds::tds_ncss_download.
 #'
 #' @return A raster brick of the desired MACA V2 datasets.
 #'
@@ -35,7 +37,9 @@ mco_get_gridmet <- function(x = mt_state %>%
                                          "daily_minimum_temperature",
                                          "daily_maximum_temperature"),
                             dates = "latest",
-                            out_dir = tempdir()){
+                            out_dir = tempdir(),
+                            overwrite = TRUE,
+                            ...){
 
   if(missing(out_dir)){
     out_dir <- tempfile()
@@ -62,48 +66,72 @@ mco_get_gridmet <- function(x = mt_state %>%
     if(dates == "latest" || dates > Sys.Date()){
       ncss_args = list(accept = "netcdf4")
     } else {
-      ncss_args = list(accept = "netcdf4",
-                       time = dates)
+      ncss_args = list(time = dates,
+                       accept = "netcdf4")
     }
   }
 
-  out <- thredds::tds_list_datasets("http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html") %>%
-    dplyr::mutate(Service = path %>%
-                    purrr::map_chr(function(x){
-                      out <- thredds::tds_list_services(x)
-                      out$path[out$service == "NetcdfSubset"]
-                    }),
-                  Variable = Service %>%
-                    purrr::map_chr(function(x){
-                      thredds::tds_ncss_list_vars(x)$name[[1]]
-                    })) %>%
-    dplyr::filter(Variable %in% elements) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(Filename = thredds::tds_ncss_download(ncss_url = Service,
-                                                       bbox = x %>%
-                                                         lwgeom::st_transform_proj(4326) %>%
-                                                         sf::st_bbox(),
-                                                       vars = Variable,
-                                                       out_file = stringr::str_c(out_dir,"/",Variable,".nc"),
-                                                       ncss_args = ncss_args),
-                  Data = Filename %>%
-                    raster::stack() %>%
-                    raster::t() %>%
-                    raster::flip("x") %>%
-                    list())
+  services <- "http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html" %>%
+    thredds::tds_list_datasets() %$%
+    path %>%
+    purrr::map_dfr(function(path){
+      path %>%
+        thredds::tds_list_services() %>%
+        dplyr::filter(service %in% "NetcdfSubset")
+    })
 
-  purrr::map2(out$Data, out$Filename, function(x,y){
-      names(x) <- y %>%
-        raster::stack() %>%
-        names() %>%
-        stringr::str_remove("X") %>%
-        as.integer() %>%
-        magrittr::add(lubridate::as_date("1900-01-01"))
-
-      projection(x) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
-
-      x
+  vars <- services %$%
+    path %>%
+    purrr::map_dfr(function(path){
+      path %>%
+        thredds::tds_ncss_list_vars()
     }) %>%
-    magrittr::set_names(out$Variable)
+    dplyr::bind_cols(services) %>%
+    dplyr::filter(name %in% elements)
+
+  files <- purrr::map2(vars$name,
+                       vars$path,
+                       function(name,path){
+                         thredds::tds_ncss_download(ncss_url = path,
+                                                    bbox = x %>%
+                                                      lwgeom::st_transform_proj(4326) %>%
+                                                      sf::st_bbox(),
+                                                    vars = name,
+                                                    out_file = stringr::str_c(out_dir,"/",name,".nc"),
+                                                    ncss_args = ncss_args,
+                                                    overwrite = overwrite,
+                                                    ...)
+                       }) %>%
+    magrittr::set_names(vars$name)
+
+  # Fix malformed NetCDF files, and write to disk
+  purrr::map2(vars$name,
+              files,
+              function(name, file){
+                if(!file.exists(stringr::str_c(out_dir,"/",name,".Rds")) | overwrite){
+                  out <- file %>%
+                    raster::stack() %>%
+                    raster::readAll() %>%
+                    raster::t() %>%
+                    raster::flip("x")
+
+                  names(out) <- file %>%
+                    raster::stack() %>%
+                    names() %>%
+                    stringr::str_remove("X") %>%
+                    as.integer() %>%
+                    magrittr::add(lubridate::as_date("1900-01-01"))
+
+                  raster::projection(out) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+
+                  out %>%
+                    readr::write_rds(stringr::str_c(out_dir,"/",name,".Rds"),
+                                     compress = "xz")
+                }
+
+                readr::read_rds(stringr::str_c(out_dir,"/",name,".Rds"))
+
+              }) %>%
+    magrittr::set_names(vars$name)
 
 }

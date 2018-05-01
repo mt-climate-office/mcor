@@ -35,7 +35,8 @@ Imports:
     methods,
     ncdf4,
     units,
-    thredds
+    thredds,
+    rvest
 Suggests: 
     testthat,
     covr,

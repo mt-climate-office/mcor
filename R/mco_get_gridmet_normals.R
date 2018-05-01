@@ -21,34 +21,42 @@ mco_get_gridmet_normals <-
            elements = c("precipitation_amount",
                         "daily_minimum_temperature",
                         "daily_maximum_temperature"),
+           out_dir = tempdir(),
            ...)
   {
 
-    gridmet <-
-      mcor::mco_get_gridmet(dates = c("1981-01-01","2010-12-31"),
-                            ...) %>%
-      purrr::map(function(x){
-        out <- x %>%
-          raster::brick()
+    if(!file.exists(stringr::str_c(out_dir,"/gridmet_normals.Rds"))){
+      gridmet <-
+        mcor::mco_get_gridmet(dates = c("1981-01-01","2010-12-31"),
+                              elements = elements,
+                              out_dir = out_dir,
+                              overwrite = FALSE,
+                              ...) %>%
+        purrr::map(function(x){
 
-        raster::projection(out) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+          x.days <- x %>%
+            names() %>%
+            stringr::str_remove("X") %>%
+            lubridate::as_date() %>%
+            lubridate::yday()
 
-        out.days <- out %>%
-          names() %>%
-          stringr::str_remove("X") %>%
-          lubridate::yday()
+          x %<>%
+            raster::setZ(x.days, name = 'yday')
 
-        out %<>%
-          raster::zApply(by = out.days,
-                         fun = mean)
+          x %<>%
+            raster::zApply(by = x.days,
+                           fun = mean)
 
-        gc()
-        gc()
+          gc()
+          gc()
 
-        out[[1:365]]
+          x[[1:365]]
 
-      })
+        }) %>%
+        readr::write_rds(stringr::str_c(out_dir,"/gridmet_normals.Rds"),
+                         compress = "xz")
+    }
 
-    gridmet
+    readr::read_rds(stringr::str_c(out_dir,"/gridmet_normals.Rds"))
 
   }

@@ -6,7 +6,8 @@
 \usage{
 mco_get_gridmet(x = mt_state \%>\% sf::st_buffer(10000),
   elements = c("precipitation_amount", "daily_minimum_temperature",
-  "daily_maximum_temperature"), dates = "latest", out_dir = tempdir())
+  "daily_maximum_temperature"), dates = "latest", out_dir = tempdir(),
+  overwrite = TRUE, ...)
 }
 \arguments{
 \item{x}{An object of class sf.}
@@ -22,6 +23,10 @@ most recent date available product.}
 
 \item{out_dir}{A directory in which to download the raw MACA V2 datasets.
 Defaults to the current working directory}
+
+\item{overwrite}{Whether to overwrite a file in the out_dir of the same element.}
+
+\item{...}{Other parameters passed on to thredds::tds_ncss_download.}
 }
 \value{
 A raster brick of the desired MACA V2 datasets.

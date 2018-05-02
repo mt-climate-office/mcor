@@ -46,6 +46,21 @@ sf::st_as_sf()
 #   tibble::as_data_frame() %>%
 #   sf::st_as_sf()
 
+# Get the Montana tribal land boundary dataset from the Montana Spatial Data Infrastructure
+FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaReservations.zip", destdir = "./data-raw")
+unzip("./data-raw/MontanaReservations.zip", exdir = "./data-raw/MontanaReservations")
+mt_tribal_land <- sf::st_read("./data-raw/MontanaReservations/MontanaReservations.gdb", layer = "MontanaReservations") %>%
+  lwgeom::st_transform_proj(mt_state_plane) %>%
+  dplyr::select(NAME) %>%
+  dplyr::mutate(NAME = NAME %>%
+                  as.character() %>%
+                  tolower() %>%
+                  tools::toTitleCase()) %>%
+  dplyr::rename(`Name` = NAME) %>%
+  tibble::as_data_frame() %>%
+  sf::st_as_sf()
+
+
 # Get the official climate division shapefiles
 FedData::download_data("ftp://ftp.ncdc.noaa.gov/pub/data/cirs/climdiv/CONUS_CLIMATE_DIVISIONS.shp.zip", destdir = "./data-raw")
 unzip("./data-raw/CONUS_CLIMATE_DIVISIONS.shp.zip", exdir = "./data-raw/CONUS_CLIMATE_DIVISIONS")
@@ -240,6 +255,7 @@ devtools::use_data(mt_state, overwrite = T)
 devtools::use_data(mt_state_simple, overwrite = T)
 devtools::use_data(mt_counties, overwrite = T)
 devtools::use_data(mt_counties_simple, overwrite = T)
+devtools::use_data(mt_tribal_land, overwrite = T)
 devtools::use_data(mt_climate_divisions, overwrite = T)
 devtools::use_data(mt_climate_divisions_simple, overwrite = T)
 devtools::use_data(mt_hillshade_500m, overwrite = T)
@@ -252,6 +268,11 @@ unlink("./data-raw/tl_2017_us_county",
 unlink("./data-raw/MontanaCounties.zip")
 
 unlink("./data-raw/MontanaCounties/",
+       recursive = TRUE)
+
+unlink("./data-raw/MontanaReservations.zip")
+
+unlink("./data-raw/MontanaReservations/",
        recursive = TRUE)
 
 unlink("./data-raw/CONUS_CLIMATE_DIVISIONS",

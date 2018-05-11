@@ -1,0 +1,25 @@
+---
+title: "Calculating and Plotting Climate Normals"
+author: "Kyle Bocinsky"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Getting climate normals
+```{r}
+
+mco_get_gridmet_normals()
+
+```
+

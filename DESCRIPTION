@@ -36,7 +36,9 @@ Imports:
     ncdf4,
     units,
     thredds,
-    rvest
+    rvest,
+    biwavelet,
+    fst
 Suggests: 
     testthat,
     covr,

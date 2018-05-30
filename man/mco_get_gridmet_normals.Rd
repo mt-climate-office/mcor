@@ -15,6 +15,12 @@ mco_get_gridmet_normals(x = mt_state \%>\% sf::st_buffer(10000),
 
 \item{elements}{Gridmet variables to download.}
 
+\item{out_dir}{The directory in which to write the normals.}
+
+\item{p}{A vector of percentiles to calculate.}
+
+\item{overwrite}{Overwrite output if it exists?}
+
 \item{...}{Additional arguments passed on to \link{mco_get_gridmet}.}
 }
 \value{

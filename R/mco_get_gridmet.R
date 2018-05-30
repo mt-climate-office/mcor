@@ -1,7 +1,7 @@
 utils::globalVariables(c('.',
                          'mt_state',
                          'path',
-                         'Service',
+                         'service',
                          'Variable',
                          'Filename'))
 #' Download select GridMET datasets.
@@ -40,6 +40,23 @@ mco_get_gridmet <- function(x = mt_state %>%
                             out_dir = tempdir(),
                             overwrite = TRUE,
                             ...){
+
+  # # Fix for flipped GridMet grid
+  # x <- gridmet_fix %>%
+  #   raster::flip("y") %>%
+  #   mcor::mco_mask(x) %>%
+  #   raster::flip("y") %>%
+  #   raster::trim() %>%
+  #   FedData::polygon_from_extent() %>%
+  #   sf::st_as_sf()
+  #
+  # x_real <- mcor:::gridmet_fix %>%
+  #   # raster::flip("y") %>%
+  #   mcor::mco_mask(x) %>%
+  #   raster::flip("y") %>%
+  #   raster::trim() %>%
+  #   FedData::polygon_from_extent() %>%
+  #   sf::st_as_sf()
 
   if(missing(out_dir)){
     out_dir <- tempfile()
@@ -93,7 +110,8 @@ mco_get_gridmet <- function(x = mt_state %>%
                        vars$path,
                        function(name,path){
                          thredds::tds_ncss_download(ncss_url = path,
-                                                    bbox = x %>%
+                                                    bbox =
+                                                      x %>%
                                                       lwgeom::st_transform_proj(4326) %>%
                                                       sf::st_bbox(),
                                                     vars = name,
@@ -105,15 +123,21 @@ mco_get_gridmet <- function(x = mt_state %>%
     magrittr::set_names(vars$name)
 
   # Fix malformed NetCDF files, and write to disk
-  purrr::map2(vars$name,
-              files,
-              function(name, file){
+  purrr::imap(files,
+              function(file,name){
                 if(!file.exists(stringr::str_c(out_dir,"/",name,".Rds")) | overwrite){
-                  out <- file %>%
+                  out <-
+                    file %>%
                     raster::stack() %>%
-                    raster::readAll() %>%
-                    raster::t() %>%
-                    raster::flip("x")
+                    raster::readAll()# %>%
+                    # raster::flip("y")
+
+                  # out %<>%
+                  #   raster::setExtent(out %>%
+                  #                       raster::extend(gridmet_fix) %>%
+                  #                       raster::flip("y") %>%
+                  #                       raster::trim() %>%
+                  #                       extent())
 
                   names(out) <- file %>%
                     raster::stack() %>%
@@ -126,7 +150,7 @@ mco_get_gridmet <- function(x = mt_state %>%
 
                   out %>%
                     readr::write_rds(stringr::str_c(out_dir,"/",name,".Rds"),
-                                     compress = "gz")
+                                     compress = "bz")
                 }
 
                 readr::read_rds(stringr::str_c(out_dir,"/",name,".Rds"))

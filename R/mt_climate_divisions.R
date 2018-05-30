@@ -2,7 +2,7 @@
 #'
 #' A dataset containing polygons of Montana climate divisions.
 #' These data are derived from the [mt_counties] dataset;
-#' county borders were dissolved using the [sf::summarize.sf()][sf::dplyr] function.
+#' county borders were dissolved using the [sf::summarise.sf()][sf::tidyverse] function.
 #' This process ensures the extent of the state is the same as the [mt_counties] dataset.
 #' These polygons are appropriate for large print maps.
 #' The script that prepared the data is [`data-raw/raw_data.R`]() in the source version of this

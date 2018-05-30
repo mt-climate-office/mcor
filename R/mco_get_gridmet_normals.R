@@ -5,6 +5,9 @@ utils::globalVariables(c('.',
 #'
 #' @param x An object of class sf.
 #' @param elements Gridmet variables to download.
+#' @param out_dir The directory in which to write the normals.
+#' @param p A vector of percentiles to calculate.
+#' @param overwrite Overwrite output if it exists?
 #' @param ... Additional arguments passed on to [mco_get_gridmet].
 #'
 #' @return A raster brick of the desired MACA V2 dataset normals.

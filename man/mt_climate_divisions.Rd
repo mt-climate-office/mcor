@@ -19,7 +19,7 @@ mt_climate_divisions
 \description{
 A dataset containing polygons of Montana climate divisions.
 These data are derived from the \link{mt_counties} dataset;
-county borders were dissolved using the \link[sf:dplyr]{sf::summarize.sf()} function.
+county borders were dissolved using the \link[sf:tidyverse]{sf::summarise.sf()} function.
 This process ensures the extent of the state is the same as the \link{mt_counties} dataset.
 These polygons are appropriate for large print maps.
 The script that prepared the data is \url{data-raw/raw_data.R} in the source version of this

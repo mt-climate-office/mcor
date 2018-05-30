@@ -38,7 +38,10 @@ Imports:
     thredds,
     rvest,
     biwavelet,
-    fst
+    fst,
+    fasterize,
+    matrixStats,
+    tibble
 Suggests: 
     testthat,
     covr,

@@ -1,0 +1,399 @@
+---
+title: "Future SWEs with SNOTEL and the monthly BCSD VIC downscaled climate models"
+author: "Kyle Bocinsky"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  bookdown::html_document2:
+    code_folding: hide
+    df_print: paged
+    fig_caption: yes
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+  
+```{r setup, include = FALSE}
+options(knitr.table.format = "html")
+
+knitr::opts_chunk$set(
+collapse = TRUE,
+comment = "#>",
+cache = TRUE,
+out.width = "100%"
+)
+
+library(mcor)
+library(magrittr)
+library(raster)
+library(tidyverse)
+library(sf)
+library(mapview)
+library(kableExtra)
+
+mapviewOptions(basemaps = c("CartoDB.Positron"))
+```
+
+The goal of this vignette is to document how the MCO makes comparisons between historic, "normal" (1981--2010 and 1971-2000) SWE data from the NRCS SNOTEL network and the VIC hydroclimatology models derived from [monthly BCSD downscaled climate models](http://gdo-dcp.ucllnl.org/downscaled_cmip_projections/dcpInterface.html#About). We compare between 1981--2010 and 1971--2000 normal instrumental April 1 SWE values (from SNOTEL) and modeled mid-century (2040--2069) values from the BCSD VIC model. This is a point reconstruction that may be aggregated to hydrological basins in the style of NRCS SWE maps.
+
+### Summary {-}
+In this script, we will:
+
+1. Download the 2040--2069 mid-century monthly BCSD VIC data for Montana and its included HUC 6 hydrological basins.
+2. Download the 1981--2010 and 1971--2000 normal instrumental SNOTEL data from within that same area.
+3. Extract the BCSD VIC data from the locations of the instrumental SNOTEL data for comparison.
+4. Generate maps of percent of normal April 1 SWE.
+
+## Downloading and loading monthly BCSD VIC data for Montana {-}
+
+The first step is to download the monthly BCSD VIC data for Montana. These data are stored in several places; here, we access them through a THREDDS server maintained by the USGS Water Resources Mission Area (formerly the USGS Center for Integrated Data Analytics, CIDA). In this section, we:
+
+- Download the data covering the area of all HUC 6 watershed that intersect with the state of Montana.
+- Extract out only April 1 SWE values.
+- Convert the data from millimeters to inches.
+- Calculate the quartiles of the 31 models for each year.
+- Calculate the median quartile values over the mid-century (2040--2069) period.
+
+```{r download BCSD}
+data_out <- "./data/raw-data/"
+dir.create(data_out,
+           showWarnings = FALSE, 
+           recursive = TRUE)
+
+mm_to_in <- function(x){
+  x %>%
+    magrittr::multiply_by(0.0393701) # mm to inches
+}
+
+bcsd_swe_midcentury_vars <- thredds::tds_ncss_list_vars("https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html") %$%
+  name %>%
+  stringr::str_subset("_swe") %>%
+  stringr::str_subset("_rcp45_") %>%
+  sort()
+
+bcsd_swe_midcentury <- 
+  bcsd_swe_midcentury_vars %>%
+  purrr::map_chr(function(var){
+    thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
+                               out_file = stringr::str_c(data_out,"/raw_data/",var,".nc"),
+                               bbox = mcor::mt_watersheds_simple %>%
+                                 dplyr::filter(`Hydrologic Unit` == 6) %>%
+                                 sf::st_bbox() %>%
+                                 sf::st_as_sfc() %>%
+                                 lwgeom::st_transform_proj(4326) %>%
+                                 # magrittr::add(c(360,0)) %>%
+                                 sf::st_bbox(),
+                               vars = var,
+                               ncss_args = list(time_start = "2040-01-01",
+                                                time_end = "2069-12-31"),
+                               overwrite = FALSE)
+  }) %>%
+  purrr::compact() %>%
+  magrittr::set_names(bcsd_swe_midcentury_vars) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(function(x){
+    x %>%
+      raster::subset(
+        x %>%
+          names() %>%
+          gsub("X","",.) %>%
+          as.Date(format = "%Y.%m.%d") %>%
+          lubridate::month() %in%
+          c(4) %>%
+          which()
+      ) %>%
+      mm_to_in() %>%
+      raster::as.list()
+  }) %>%
+  # The next eight lines first calculates the quantiles of the 31 models for each year
+  # then the median for each percentile across the mid-century
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(raster::calc, quantile, na.rm = T) %>%
+  purrr::map(raster::as.list) %>%
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  magrittr::set_names(paste0(seq(0,1,0.25),"%")) %>%
+  purrr::map(raster::calc, median, na.rm = TRUE) %>%
+  raster::stack(quick = TRUE)
+
+```
+
+Here is a map of the mid-century median April 1 SWE (in.), with HUC 6 watersheds overlaid.
+
+```{r mid-century map}
+huc6 <- mcor::mt_watersheds_simple %>%
+                     dplyr::filter(`Hydrologic Unit` == 6) %>%
+                     sf::st_transform(4326)
+
+pal = mapview::mapviewPalette("mapviewTopoColors")
+
+mapview::mapview(bcsd_swe_midcentury[["X0.5."]],
+                 col.regions = pal(100), 
+                 at = seq(0, 60, 10), 
+                 legend = TRUE,
+                 alpha = 0.5,
+                 na.color = NA,
+                 layer.name = "Mid-century SWE (in.)") +
+  mapview::mapview(huc6,
+                   alpha.regions = 0,
+                   label = huc6$Watershed,
+                   color = "white")
+
+```
+
+## Downloading the 1971--2000 and 1981--2010 normal instrumental SNOTEL data {-}
+Our instrumental data comes from the NRCS SNOTEL network, available through the [NRCS National Water and Climate Center](https://www.wcc.nrcs.usda.gov/snow/). The NRCS publishes two datasets: an inventory of SNOTEL sites, including their associated HUC basins, and the data recorded from the sites. It is important to remember that one SNOTEL site can be associated with multiple basins; the SNOTEL sites are often near basin boundaries, and when aggregating SNOTEL data to great basin reports, the NRCS uses both SNOTEL stations within the basin, and ones that are nearby. We also download both 1971--2000 and 1981--2010 normal instrumental SNOTEL data. The MCO has been using 1981--2010 as its current standard for defining normal climatology, but the water chapter of the MCA used 1971--2000. This section of code:
+
+- Downloads the SNOTEL inventory for SNOTEL sites within Montana HUC 6 watersheds.
+- Downloads the normal data for those SNOTEL sites.
+- Joins those two datasets, resulting in spatially-referenced SNOTEL normals data.
+
+```{r snotel normals}
+huc <- 6
+date <- "2018-04-01" %>%
+  lubridate::as_date()
+
+snotel_inventory <- mcor::mco_get_snotel_inventory() %>%
+    dplyr::left_join(mcor::mco_get_snotel_huc() %>%
+                       dplyr::mutate(`WBD code` = stringr::str_sub(`WBD code`,1,huc)) %>%
+                       dplyr::distinct()) %>%
+    dplyr::filter(`WBD code` %in% (mcor::mt_watersheds_simple %>%
+                                     dplyr::filter(`Hydrologic Unit` %in% c(huc)) %$%
+                                     `WBD code`)) %>%
+    sf::st_as_sf() %>%
+    lwgeom::st_transform_proj(mcor::mt_state_plane) %>%
+    dplyr::select(-`Station Id`:-`End Date`)
+  
+  snotel_data <- mcor::mco_get_snotel_data(stations = snotel_inventory$Station %>%
+                                       unique(),
+                                     variables = c('WTEQ::normal_1981',
+                                                   'WTEQ::normal_1971'),
+                                     start_date = date,
+                                     end_date = date)
+  
+  snotel_data <- snotel_inventory %>%
+    dplyr::left_join(snotel_data,
+                     by = c("Station")) %>%
+    dplyr::arrange(Station) %>%
+    stats::na.omit() %>%
+    dplyr::select(Station,
+                  `WBD code`,
+                  `Normal Snow Water Equivalent (1981-2010) (in) Start of Day Values`,
+                  `Normal Snow Water Equivalent (1971-2000) (in) Start of Day Values`) %>%
+    dplyr::rename(`SNOTEL 1981-2010 normal (in.)` = `Normal Snow Water Equivalent (1981-2010) (in) Start of Day Values`,
+                  `SNOTEL 1971-2000 normal (in.)` = `Normal Snow Water Equivalent (1971-2000) (in) Start of Day Values`)
+
+```
+
+Here is a panel of maps of the 1981--2010 and 1971--2000 April 1 SWE values.
+
+```{r normal maps}
+snotel_data_slim <- 
+  snotel_data %>%
+  dplyr::select(-`WBD code`) %>%
+  dplyr::distinct() %>%
+  dplyr::rename(`Normal_1981` =  "SNOTEL 1981-2010 normal (in.)",
+                `Normal_1971` =  "SNOTEL 1971-2000 normal (in.)")
+
+m1 <- mapview::mapview(snotel_data_slim,
+                       zcol = "Normal_1981",
+                       col.regions = pal(100), 
+                 at = seq(0, 60, 10), 
+                 legend = TRUE,
+                 alpha = 0.5,
+                 na.color = NA,
+                 layer.name = "1981-2010 Norm. (in.)") +
+  mapview::mapview(huc6,
+                   alpha.regions = 0,
+                   label = huc6$Watershed,
+                   color = "black")
+
+m2 <- mapview::mapview(snotel_data_slim,
+                       zcol = "Normal_1971",
+                       col.regions = pal(100), 
+                 at = seq(0, 60, 10), 
+                 legend = TRUE,
+                 alpha = 0.5,
+                 na.color = NA,
+                 layer.name = "1971-2000 Norm. (in.)") +
+  mapview::mapview(huc6,
+                   alpha.regions = 0,
+                   label = huc6$Watershed,
+                   color = "black")
+
+mapview::sync(list(m1,
+                   m2))
+
+```
+
+## Extract the BCSD VIC data from the SNOTEL locations {-}
+This section of code extracts the BCSD mid-century data for the SNOTEL locations, and attaches those data to the SNOTEL data downloaded above.
+```{r extract BCSD for SNOTEL}
+
+snotel_data <-
+  bcsd_swe_midcentury %>%
+  raster::extract(snotel_data %>%
+                                sf::st_cast() %>%
+                                lwgeom::st_transform_proj(4326),
+                  df = TRUE) %>%
+  dplyr::select(-ID) %>%
+  magrittr::set_names(c("Midcentury min.", 
+                        "Midcentury 25%", 
+                        "Midcentury median", 
+                        "Midcentury 75%", 
+                        "Midcentury max.")) %>%
+  dplyr::bind_cols(snotel_data,.)
+
+snotel_data %>%
+  sf::st_set_geometry(NULL) %>%
+  dplyr::select(-`WBD code`) %>%
+  dplyr::distinct() %>%
+  knitr::kable(digits = 2) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "500px")
+
+```
+
+## Mapping percent of normal April 1 SWE {-}
+Here, we calculate the % of normal SWE, and make some maps relating future projections to normal conditions.
+
+```{r the new normal}
+pal <- colorRampPalette(paste0(RColorBrewer::brewer.pal(9,"RdBu"),"80"), alpha = TRUE)
+snotel_data_1981 <- 
+  snotel_data %>%
+  dplyr::mutate_at(.vars = dplyr::vars(`Midcentury min.`:`Midcentury max.`),
+                   .funs = dplyr::funs(100 * . / `SNOTEL 1981-2010 normal (in.)`)) %>%
+  dplyr::select(-`SNOTEL 1981-2010 normal (in.)`,
+                -`SNOTEL 1971-2000 normal (in.)`,
+                -`WBD code`) %>%
+  dplyr::distinct() %>%
+  dplyr::rename("Midcentury_median" = "Midcentury median")
+  
+snotel_data_1971 <- 
+  snotel_data %>%
+  dplyr::mutate_at(.vars = dplyr::vars(`Midcentury min.`:`Midcentury max.`),
+                   .funs = dplyr::funs(100 * . / `SNOTEL 1971-2000 normal (in.)`)) %>%
+  dplyr::select(-`SNOTEL 1981-2010 normal (in.)`,
+                -`SNOTEL 1971-2000 normal (in.)`,
+                -`WBD code`) %>%
+  dplyr::distinct() %>%
+  dplyr::rename("Midcentury_median" = "Midcentury median")
+
+m1 <- mapview::mapview(snotel_data_1981,
+                       zcol = "Midcentury_median",
+                       col.regions = pal(100), 
+                 at = seq(0, 200, 20), 
+                 legend = TRUE,
+                 na.color = NA,
+                 layer.name = "% Norm. (1981-2010)") +
+  mapview::mapview(huc6,
+                   alpha.regions = 0,
+                   label = huc6$Watershed,
+                   color = "black")
+
+m2 <- mapview::mapview(snotel_data_1971,
+                       zcol = "Midcentury_median",
+                       col.regions = pal(100), 
+                 at = seq(0, 200, 20), 
+                 legend = TRUE,
+                 na.color = NA,
+                 layer.name = "% Norm. (1971-2000)") +
+  mapview::mapview(huc6,
+                   alpha.regions = 0,
+                   label = huc6$Watershed,
+                   color = "black")
+
+mapview::sync(list(m1,
+                   m2))
+
+
+```
+
+Finally, we to emulate the NRCS SWE maps, we aggregate stations within basins by taking their mean. This isn't a particularly "honest" representation of the data, since it is clear that SNOTEL sites are biased towards high elevations. However, it is how people are used to seeing these data presented.
+
+```{r basin projections}
+pal <- colorRampPalette(paste0(RColorBrewer::brewer.pal(9,"RdBu"),"80"), alpha = TRUE)
+
+watersheds_cropped <- 
+  mt_watersheds_simple %>%
+  dplyr::filter(`Hydrologic Unit` == 6) %>%
+  sf::st_intersection(mt_state) %>%
+  dplyr::filter(sf::st_area(.) > units::set_units(1000000000,m^2)) %>%
+  dplyr::rename(`WBD code` = `WBD.code`,
+                `Hydrologic Unit` = Hydrologic.Unit)
+
+snotel_data_1981 <- 
+  snotel_data %>%
+  dplyr::mutate_at(.vars = dplyr::vars(`Midcentury min.`:`Midcentury max.`),
+                   .funs = dplyr::funs(100 * . / `SNOTEL 1981-2010 normal (in.)`)) %>%
+  dplyr::select(-`SNOTEL 1981-2010 normal (in.)`,
+                -`SNOTEL 1971-2000 normal (in.)`,
+                -Station) %>%
+  group_by(`WBD code`) %>%
+  dplyr::summarise(`Stations Count` = n(),
+                   `Midcentury min.` = mean(`Midcentury min.`) %>% round(),
+                   `Midcentury 25%` = mean(`Midcentury 25%`) %>% round(),
+                   `Midcentury median` = mean(`Midcentury median`) %>% round(),
+                   `Midcentury 75%` = mean(`Midcentury 75%`) %>% round(),
+                   `Midcentury max.` = mean(`Midcentury max.`) %>% round()) %>%
+  dplyr::filter(`Stations Count` >= 3) %>%
+  sf::st_set_geometry(NULL) %>%
+  dplyr::left_join(watersheds_cropped) %>%
+  sf::st_sf() %>%
+  na.omit() %>%
+  dplyr::select(-`Hydrologic Unit`) %>%
+  dplyr::select(`WBD code`, Watershed, dplyr::everything()) %>%
+  dplyr::rename("Midcentury_median" = "Midcentury median")
+
+snotel_data_1971 <- 
+  snotel_data %>%
+  dplyr::mutate_at(.vars = dplyr::vars(`Midcentury min.`:`Midcentury max.`),
+                   .funs = dplyr::funs(100 * . / `SNOTEL 1971-2000 normal (in.)`)) %>%
+  dplyr::select(-`SNOTEL 1981-2010 normal (in.)`,
+                -`SNOTEL 1971-2000 normal (in.)`,
+                -Station) %>%
+  group_by(`WBD code`) %>%
+  dplyr::summarise(`Stations Count` = n(),
+                   `Midcentury min.` = mean(`Midcentury min.`) %>% 
+                     round(),
+                   `Midcentury 25%` = mean(`Midcentury 25%`) %>% 
+                     round(),
+                   `Midcentury median` = mean(`Midcentury median`) %>% 
+                     round(),
+                   `Midcentury 75%` = mean(`Midcentury 75%`) %>% 
+                     round(),
+                   `Midcentury max.` = mean(`Midcentury max.`) %>% 
+                     round()) %>%
+  dplyr::filter(`Stations Count` >= 3) %>%
+  sf::st_set_geometry(NULL) %>%
+  dplyr::left_join(watersheds_cropped) %>%
+  sf::st_sf() %>%
+  na.omit() %>%
+  dplyr::select(-`Hydrologic Unit`) %>%
+  dplyr::select(`WBD code`, Watershed, dplyr::everything()) %>%
+  dplyr::rename("Midcentury_median" = "Midcentury median")
+
+m1 <- mapview::mapview(snotel_data_1981,
+                       zcol = "Midcentury_median",
+                       col.regions = pal(100), 
+                       at = seq(0, 200, 20), 
+                       legend = TRUE,
+                       na.color = NA,
+                       layer.name = "% Norm. (1981-2010)")
+
+m2 <- mapview::mapview(snotel_data_1971,
+                       zcol = "Midcentury_median",
+                       col.regions = pal(100), 
+                       at = seq(0, 200, 20), 
+                       legend = TRUE,
+                       na.color = NA,
+                       layer.name = "% Norm. (1971-2000)")
+
+mapview::sync(list(m1,
+                   m2))
+
+
+```
+
+

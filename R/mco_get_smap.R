@@ -64,7 +64,8 @@ https://urs.earthdata.nasa.gov/")
     smapr:::get_dir_contents() %>%
     stringr::str_subset(id) %>%
     stringr::str_extract('[^.]*$') %>%
-    as.integer()
+    as.integer() %>%
+    max()
 
   latest_date <- suppressWarnings(smapr:::route_to_dates(id, version) %>%
                                     smapr:::get_dir_contents() %>%

@@ -7,7 +7,7 @@ output:
     code_folding: hide
     df_print: paged
     fig_caption: yes
-    toc: true
+    toc: false
     toc_float: true
 editor_options: 
   chunk_output_type: console
@@ -39,10 +39,11 @@ The goal of this vignette is to document how the MCO makes comparisons between h
 ### Summary {-}
 In this script, we will:
 
-1. Download the 2040--2069 mid-century monthly BCSD VIC data for Montana and its included HUC 6 hydrological basins.
-2. Download the 1981--2010 and 1971--2000 normal instrumental SNOTEL data from within that same area.
-3. Extract the BCSD VIC data from the locations of the instrumental SNOTEL data for comparison.
-4. Generate maps of percent of normal April 1 SWE.
+1. Download the 2040--2069 mid-century monthly BCSD VIC data for Montana and the HUC 6 hydrological basins it overlaps.
+2. Download the 1981--2010 and 1971--2000 monthly VIC data for that same area.
+3. Download the 1981--2010 and 1971--2000 normal (median) instrumental SNOTEL data from within that same area.
+4. Extract the BCSD VIC data from the locations of the instrumental SNOTEL data for comparison.
+5. Generate maps of percent of normal April 1 SWE.
 
 ## Downloading and loading monthly BCSD VIC data for Montana {-}
 
@@ -52,7 +53,7 @@ The first step is to download the monthly BCSD VIC data for Montana. These data 
 - Extract out only April 1 SWE values.
 - Convert the data from millimeters to inches.
 - Calculate the quartiles of the 31 models for each year.
-- Calculate the median quartile values over the mid-century (2040--2069) period.
+- Calculate the median quartile values over the mid-century (2040--2069), 1981--2010, and 1971--2000 periods.
 
 ```{r download BCSD}
 data_out <- "./data/raw-data/"
@@ -75,7 +76,7 @@ bcsd_swe_midcentury <-
   bcsd_swe_midcentury_vars %>%
   purrr::map_chr(function(var){
     thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
-                               out_file = stringr::str_c(data_out,"/raw_data/",var,".nc"),
+                               out_file = stringr::str_c(data_out,"/raw_data/",var,"_2040-2069.nc"),
                                bbox = mcor::mt_watersheds_simple %>%
                                  dplyr::filter(`Hydrologic Unit` == 6) %>%
                                  sf::st_bbox() %>%
@@ -117,28 +118,136 @@ bcsd_swe_midcentury <-
   purrr::map(raster::calc, median, na.rm = TRUE) %>%
   raster::stack(quick = TRUE)
 
+bcsd_swe_1971_2000 <- 
+  bcsd_swe_midcentury_vars %>%
+  purrr::map_chr(function(var){
+    thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
+                               out_file = stringr::str_c(data_out,"/raw_data/",var,"_1971-2000.nc"),
+                               bbox = mcor::mt_watersheds_simple %>%
+                                 dplyr::filter(`Hydrologic Unit` == 6) %>%
+                                 sf::st_bbox() %>%
+                                 sf::st_as_sfc() %>%
+                                 lwgeom::st_transform_proj(4326) %>%
+                                 # magrittr::add(c(360,0)) %>%
+                                 sf::st_bbox(),
+                               vars = var,
+                               ncss_args = list(time_start = "1971-01-01",
+                                                time_end = "2000-12-31"),
+                               overwrite = FALSE)
+  }) %>%
+  purrr::compact() %>%
+  magrittr::set_names(bcsd_swe_midcentury_vars) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(function(x){
+    x %>%
+      raster::subset(
+        x %>%
+          names() %>%
+          gsub("X","",.) %>%
+          as.Date(format = "%Y.%m.%d") %>%
+          lubridate::month() %in%
+          c(4) %>%
+          which()
+      ) %>%
+      mm_to_in() %>%
+      raster::as.list()
+  }) %>%
+  # The next eight lines first calculates the quantiles of the 31 models for each year
+  # then the median for each percentile across the mid-century
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(raster::calc, quantile, na.rm = T) %>%
+  purrr::map(raster::as.list) %>%
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  magrittr::set_names(paste0(seq(0,1,0.25),"%")) %>%
+  purrr::map(raster::calc, median, na.rm = TRUE) %>%
+  raster::stack(quick = TRUE)
+
+bcsd_swe_1981_2010 <- 
+  bcsd_swe_midcentury_vars %>%
+  purrr::map_chr(function(var){
+    thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
+                               out_file = stringr::str_c(data_out,"/raw_data/",var,"_1981-2010.nc"),
+                               bbox = mcor::mt_watersheds_simple %>%
+                                 dplyr::filter(`Hydrologic Unit` == 6) %>%
+                                 sf::st_bbox() %>%
+                                 sf::st_as_sfc() %>%
+                                 lwgeom::st_transform_proj(4326) %>%
+                                 # magrittr::add(c(360,0)) %>%
+                                 sf::st_bbox(),
+                               vars = var,
+                               ncss_args = list(time_start = "1981-01-01",
+                                                time_end = "2010-12-31"),
+                               overwrite = FALSE)
+  }) %>%
+  purrr::compact() %>%
+  magrittr::set_names(bcsd_swe_midcentury_vars) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(function(x){
+    x %>%
+      raster::subset(
+        x %>%
+          names() %>%
+          gsub("X","",.) %>%
+          as.Date(format = "%Y.%m.%d") %>%
+          lubridate::month() %in%
+          c(4) %>%
+          which()
+      ) %>%
+      mm_to_in() %>%
+      raster::as.list()
+  }) %>%
+  # The next eight lines first calculates the quantiles of the 31 models for each year
+  # then the median for each percentile across the mid-century
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(raster::calc, quantile, na.rm = T) %>%
+  purrr::map(raster::as.list) %>%
+  purrr::transpose() %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  magrittr::set_names(paste0(seq(0,1,0.25),"%")) %>%
+  purrr::map(raster::calc, median, na.rm = TRUE) %>%
+  raster::stack(quick = TRUE)
+
 ```
 
-Here is a map of the mid-century median April 1 SWE (in.), with HUC 6 watersheds overlaid.
+Here is a panel of maps of the 1981--2010 median April 1 SWE (in.) compared to the mid-century median April 1 SWE (in.), with HUC 6 watersheds overlaid.
 
 ```{r mid-century map}
-huc6 <- mcor::mt_watersheds_simple %>%
+basins <- mcor::mt_watersheds_simple %>%
                      dplyr::filter(`Hydrologic Unit` == 6) %>%
                      sf::st_transform(4326)
 
-pal = mapview::mapviewPalette("mapviewTopoColors")
+# pal = mapview::mapviewPalette("mapviewTopoColors")
+pal <- colorRampPalette(rev(paste0(RColorBrewer::brewer.pal(9,"Blues"),"80")), alpha = TRUE)
 
-mapview::mapview(bcsd_swe_midcentury[["X0.5."]],
+m1 <- mapview::mapview(bcsd_swe_1981_2010[["X0.5."]],
                  col.regions = pal(100), 
-                 at = seq(0, 60, 10), 
+                 at = seq(0, 60, 5), 
+                 legend = TRUE,
+                 alpha = 0.5,
+                 na.color = NA,
+                 layer.name = "1981-2010 SWE (in.)") +
+  mapview::mapview(basins,
+                   alpha.regions = 0,
+                   label = basins$Watershed,
+                   color = "white")
+
+m2 <- mapview::mapview(bcsd_swe_midcentury[["X0.5."]],
+                 col.regions = pal(100), 
+                 at = seq(0, 60, 5), 
                  legend = TRUE,
                  alpha = 0.5,
                  na.color = NA,
                  layer.name = "Mid-century SWE (in.)") +
-  mapview::mapview(huc6,
+  mapview::mapview(basins,
                    alpha.regions = 0,
-                   label = huc6$Watershed,
+                   label = basins$Watershed,
                    color = "white")
+
+mapview::sync(list(m1,
+                   m2))
 
 ```
 
@@ -199,27 +308,27 @@ snotel_data_slim <-
 m1 <- mapview::mapview(snotel_data_slim,
                        zcol = "Normal_1981",
                        col.regions = pal(100), 
-                 at = seq(0, 60, 10), 
+                 at = seq(0, 60, 5), 
                  legend = TRUE,
                  alpha = 0.5,
                  na.color = NA,
                  layer.name = "1981-2010 Norm. (in.)") +
-  mapview::mapview(huc6,
+  mapview::mapview(basins,
                    alpha.regions = 0,
-                   label = huc6$Watershed,
+                   label = basins$Watershed,
                    color = "black")
 
 m2 <- mapview::mapview(snotel_data_slim,
                        zcol = "Normal_1971",
                        col.regions = pal(100), 
-                 at = seq(0, 60, 10), 
+                 at = seq(0, 60, 5), 
                  legend = TRUE,
                  alpha = 0.5,
                  na.color = NA,
                  layer.name = "1971-2000 Norm. (in.)") +
-  mapview::mapview(huc6,
+  mapview::mapview(basins,
                    alpha.regions = 0,
-                   label = huc6$Watershed,
+                   label = basins$Watershed,
                    color = "black")
 
 mapview::sync(list(m1,
@@ -287,9 +396,9 @@ m1 <- mapview::mapview(snotel_data_1981,
                  legend = TRUE,
                  na.color = NA,
                  layer.name = "% Norm. (1981-2010)") +
-  mapview::mapview(huc6,
+  mapview::mapview(basins,
                    alpha.regions = 0,
-                   label = huc6$Watershed,
+                   label = basins$Watershed,
                    color = "black")
 
 m2 <- mapview::mapview(snotel_data_1971,
@@ -299,14 +408,49 @@ m2 <- mapview::mapview(snotel_data_1971,
                  legend = TRUE,
                  na.color = NA,
                  layer.name = "% Norm. (1971-2000)") +
-  mapview::mapview(huc6,
+  mapview::mapview(basins,
                    alpha.regions = 0,
-                   label = huc6$Watershed,
+                   label = basins$Watershed,
                    color = "black")
 
 mapview::sync(list(m1,
                    m2))
 
+
+```
+
+These maps make the same comparison among the gridded modeled data.
+
+```{r the new normal gridded}
+pal <- colorRampPalette(c(paste0(RColorBrewer::brewer.pal(9,"RdBu"),"80")[1:3],paste0(RColorBrewer::brewer.pal(9,"RdBu"),"80")[7:9]), alpha = TRUE)
+
+bcsd_swe_percent_normal_1981 <- 100 * bcsd_swe_midcentury/bcsd_swe_1981_2010
+bcsd_swe_percent_normal_1971 <- 100 * bcsd_swe_midcentury/bcsd_swe_1971_2000
+
+m1 <- mapview::mapview(bcsd_swe_percent_normal_1981[["X0.5."]],
+                 col.regions = pal(100), 
+                 at = seq(0, 200, 20), 
+                 legend = TRUE,
+                 na.color = NA,
+                 layer.name = "% Norm. (1981-2010)") +
+  mapview::mapview(basins,
+                   alpha.regions = 0,
+                   label = basins$Watershed,
+                   color = "white")
+
+m2 <- mapview::mapview(bcsd_swe_percent_normal_1971[["X0.5."]],
+                 col.regions = pal(100), 
+                 at = seq(0, 200, 20), 
+                 legend = TRUE,
+                 na.color = NA,
+                 layer.name = "% Norm. (1971-2000)") +
+  mapview::mapview(basins,
+                   alpha.regions = 0,
+                   label = basins$Watershed,
+                   color = "white")
+
+mapview::sync(list(m1,
+                   m2))
 
 ```
 

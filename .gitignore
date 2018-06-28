@@ -27,3 +27,6 @@ vignettes/*.pdf
 # macOS "Icon" files
 Icon
 inst/doc
+data/raw-data
+data/raw-data/
+data/raw-data/*

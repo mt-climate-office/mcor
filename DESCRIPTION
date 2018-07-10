@@ -1,6 +1,6 @@
 Package: mcor
 Title: The Core Montana Climate Office R Package
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: person("Kyle", "Bocinsky", email = "kyle.bocinsky@umontana.edu", role = c("aut", "cre"))
 Description: The Montana Climate Office is an independent state-designated body that provides 
     Montanans with high-quality, timely, relevant, and scientifically based 
@@ -49,6 +49,9 @@ Suggests:
     rmarkdown,
     leaflet,
     tidyverse,
-    htmltools
+    htmltools,
+    RColorBrewer,
+    mapview,
+    kableExtra
 Remotes: github::mt-climate-office/thredds
 VignetteBuilder: knitr

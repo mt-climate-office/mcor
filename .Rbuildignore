@@ -12,3 +12,5 @@ Icon
 ^data/Icon\r$
 ^/Icon\r$
 ^docs$
+^vignettes/data$
+^vignettes/future-swe_cache$

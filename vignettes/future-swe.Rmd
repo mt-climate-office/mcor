@@ -13,13 +13,12 @@ editor_options:
   chunk_output_type: console
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-
+  %\VignetteEngine{knitr::rmarkdown}
 ---
   
 ```{r setup, include = FALSE}
-data_out <- "./vignettes/data/raw-data/"
+data_out <- "../vignettes/data/raw-data/"
 huc <- 8
 
 options(knitr.table.format = "html")
@@ -50,12 +49,12 @@ In this script, we will:
 1. Download the 2040--2069 mid-century monthly BCSD VIC data for Montana and the HUC `r huc` hydrological basins it overlaps.
 2. Download the 1981--2010 and 1971--2000 monthly VIC data for that same area.
 3. Download the 1981--2010 and 1971--2000 normal (median) instrumental SNOTEL data from within that same area.
-4. Extract the BCSD VIC data from the locations of the instrumental SNOTEL data for comparison.
+4. Extract the RCP 4.5 BCSD VIC data from the locations of the instrumental SNOTEL data for comparison.
 5. Generate maps of percent of normal April 1 SWE.
 
 ## Downloading and loading monthly BCSD VIC data for Montana {-}
 
-The first step is to download the monthly BCSD VIC data for Montana. These data are stored in several places; here, we access them through a THREDDS server maintained by the USGS Water Resources Mission Area (formerly the USGS Center for Integrated Data Analytics, CIDA). In this section, we:
+The first step is to download the monthly RCP 4.5 BCSD VIC data for Montana. These data are stored in several places; here, we access them through a THREDDS server maintained by the USGS Water Resources Mission Area (formerly the USGS Center for Integrated Data Analytics, CIDA). In this section, we:
 
 - Download the data covering the area of all HUC `r huc` watershed that intersect with the state of Montana.
 - Extract out only April 1 SWE values.
@@ -350,10 +349,10 @@ This section of code extracts the BCSD mid-century data for the SNOTEL locations
 ```{r extract BCSD for SNOTEL}
 
 snotel_bcsd_midcentury <-  raster::extract(bcsd_swe_midcentury, 
-                                            snotel_data %>%
-                                              sf::st_cast() %>%
-                                              lwgeom::st_transform_proj(4326),
-                                            df = TRUE) %>%
+                                           snotel_data %>%
+                                             sf::st_cast() %>%
+                                             lwgeom::st_transform_proj(4326),
+                                           df = TRUE) %>%
   dplyr::select(-ID) %>%
   magrittr::set_names(c("BCSD Midcentury min.", 
                         "BCSD Midcentury 25%", 
@@ -559,7 +558,7 @@ bcsd_swe_percent_normal_1971_basins <-
   dplyr::rename("Midcentury_median" = "Midcentury median") %>%
   dplyr::select(Watershed, Midcentury_median) %>%
   na.omit()
-  
+
 
 m1 <- mapview::mapview(bcsd_swe_percent_normal_1981_basins,
                        zcol = "Midcentury_median",
@@ -585,32 +584,139 @@ mapview::sync(list(m1,
 
 ```
 
-<!-- We can also look at the three basins in figure 3-10 of the Montana Climate Assessment, in an effort to reproduce that figure. Here, we calculate the basin-wide boxplots for the Pend Oreille, Missouri Headwaters, and Upper Yellowstone basins, using the 1971--2000 normals. These don't conform precisely with figure 3-10, as the pour points for defining the basins are underspecified in the documentation for for Montana Climate Assessment. If the basins specified in the MCA are known, aggregations over those basins may be calculated. -->
-<!-- ```{r basin boxplots} -->
+We can also look at the three basins in figure 3-10 of the Montana Climate Assessment, in an effort to reproduce that figure. Here, we calculate the basin-wide boxplots for three basins roughly conforming to the basins in the MCA, using the 1971--2000 normals; these don't conform precisely with figure 3-10, as the pour points for defining the basins are underspecified in the documentation for for Montana Climate Assessment. Here, we define the Clark Fork above St. Regis as including the Middle Clark Fork, Bitterroot, Flint-Rock, Blackfoot, and Upper Clark Fork HUC 8 basins; the Missouri above Toston as including the Gallatin, Madison, Jefferson, Ruby, Beaverhead, and Big Hole basins; and the Yellowstone above Billings as including the Upper Yellowstone, Stillwater, Clarks Fork Yellowstone, Shields, and Yellowstone Headwaters basins. This analysis includes points for each of 31 climate models available in the BCSD VIC dataset.
 
-<!-- watersheds_cropped <-  -->
-<!--   mt_watersheds_simple %>% -->
-<!--   dplyr::filter(`Hydrologic Unit` == huc) %>% -->
-<!--   sf::st_transform(4326) %>% -->
-<!--   dplyr::filter(Watershed %in% c("Pend Oreille", "Missouri Headwaters", "Upper Yellowstone")) %>% -->
+```{r basin boxplots}
+bcsd_swe_1971_2000_all_models <- 
+  bcsd_swe_midcentury_vars %>%
+  purrr::map_chr(function(var){
+    thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
+                               out_file = stringr::str_c(data_out,"/",var,"_1971-2000.nc"),
+                               bbox = mcor::mt_watersheds_simple %>%
+                                 dplyr::filter(`Hydrologic Unit` == huc) %>%
+                                 sf::st_bbox() %>%
+                                 sf::st_as_sfc() %>%
+                                 lwgeom::st_transform_proj(4326) %>%
+                                 # magrittr::add(c(360,0)) %>%
+                                 sf::st_bbox(),
+                               vars = var,
+                               ncss_args = list(time_start = "1971-01-01",
+                                                time_end = "2000-12-31"),
+                               overwrite = FALSE)
+  }) %>%
+  purrr::compact() %>%
+  magrittr::set_names(bcsd_swe_midcentury_vars) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(function(x){
+    x %>%
+      raster::subset(
+        x %>%
+          names() %>%
+          gsub("X","",.) %>%
+          as.Date(format = "%Y.%m.%d") %>%
+          lubridate::month() %in%
+          c(4) %>%
+          which()
+      ) %>%
+      mm_to_in() %>%
+      raster::as.list()
+  }) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(mean) %>%
+  raster::stack(quick = TRUE)
 
-<!--   dplyr::mutate(ID = 1:3, -->
-<!--                 Watershed = factor(Watershed, levels = c("Pend Oreille", "Missouri Headwaters", "Upper Yellowstone"))) -->
+bcsd_swe_midcentury_all_models <- 
+  bcsd_swe_midcentury_vars %>%
+  purrr::map_chr(function(var){
+    thredds::tds_ncss_download(ncss_url = "https://cida.usgs.gov/thredds/ncss/BCSD_mon_VIC/dataset.html",
+                               out_file = stringr::str_c(data_out,"/",var,"_2040-2069.nc"),
+                               bbox = mcor::mt_watersheds_simple %>%
+                                 dplyr::filter(`Hydrologic Unit` == huc) %>%
+                                 sf::st_bbox() %>%
+                                 sf::st_as_sfc() %>%
+                                 lwgeom::st_transform_proj(4326) %>%
+                                 # magrittr::add(c(360,0)) %>%
+                                 sf::st_bbox(),
+                               vars = var,
+                               ncss_args = list(time_start = "2040-01-01",
+                                                time_end = "2069-12-31"),
+                               overwrite = FALSE)
+  }) %>%
+  purrr::compact() %>%
+  magrittr::set_names(bcsd_swe_midcentury_vars) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(function(x){
+    x %>%
+      raster::subset(
+        x %>%
+          names() %>%
+          gsub("X","",.) %>%
+          as.Date(format = "%Y.%m.%d") %>%
+          lubridate::month() %in%
+          c(4) %>%
+          which()
+      ) %>%
+      mm_to_in() %>%
+      raster::as.list()
+  }) %>%
+  purrr::map(raster::stack, quick = TRUE) %>%
+  purrr::map(mean) %>%
+  raster::stack(quick = TRUE)
 
-<!-- bcsd_swe_percent_normal_1971 %>% -->
-<!--   raster::extract(watersheds_cropped,  -->
-<!--                   df = TRUE) %>% -->
-<!--   dplyr::rename(`Midcentury median` = `X0.5.`) %>% -->
-<!--   dplyr::select(ID, `Midcentury median`) %>% -->
-<!--   dplyr::left_join(x = watersheds_cropped, y = .) %>% -->
-<!--   ggplot2::ggplot(ggplot2::aes(x = Watershed,  -->
-<!--                                y = `Midcentury median` - 100,  -->
-<!--                                group = ID)) + -->
-<!--   ggplot2::geom_boxplot() + -->
-<!--   ylab("Midcentury % of normal") -->
 
-<!-- ``` -->
 
+watersheds_cropped <-
+  mt_watersheds_simple %>%
+  dplyr::filter(`Hydrologic Unit` == huc) %>%
+  sf::st_transform(4326) %>%
+  dplyr::mutate(.,ID = 1:nrow(.))
+
+(bcsd_swe_midcentury_all_models  / bcsd_swe_1971_2000_all_models) %>%
+  raster::extract(watersheds_cropped,
+                  df = TRUE) %>%
+  tidyr::gather(Model, Value, -ID) %>%
+  # dplyr::rename(`Midcentury median` = `X0.5.`) %>%
+  dplyr::select(ID, Value) %>%
+  dplyr::left_join(x = watersheds_cropped, y = .) %>%
+  dplyr::filter(!is.nan(Value),
+                !is.na(Value),
+                !is.infinite(Value)) %>%
+  dplyr::mutate(Watershed = factor(Watershed)) %>%
+  dplyr::mutate(Watershed = forcats::fct_collapse(Watershed,
+                                                  `Clark Fork above St. Regis` = c("Middle Clark Fork",
+                                                                                   "Bitterroot", 
+                                                                                   "Flint-Rock", 
+                                                                                   "Blackfoot", 
+                                                                                   "Upper Clark Fork"),
+                                                  `Missouri above Toston` = c("Gallatin", 
+                                                                              "Madison", 
+                                                                              "Jefferson", 
+                                                                              "Ruby", 
+                                                                              "Beaverhead", 
+                                                                              "Big Hole"),
+                                                  `Yellowstone above Billings` = c("Upper Yellowstone", 
+                                                                                   "Stillwater", 
+                                                                                   "Clarks Fork Yellowstone", 
+                                                                                   "Shields", 
+                                                                                   "Yellowstone Headwaters"))) %>%
+  dplyr::filter(Watershed %in% c("Clark Fork above St. Regis",
+                                 "Missouri above Toston",
+                                 "Yellowstone above Billings"),
+                Value >= 0,
+                Value <= 2) %>%
+  dplyr::mutate(Watershed = forcats::fct_drop(Watershed),
+                Watershed = forcats::fct_relevel(Watershed, 
+                                                 "Clark Fork above St. Regis",
+                                                 "Missouri above Toston",
+                                                 "Yellowstone above Billings")) %>%
+  # sf::st_set_geometry(NULL) %>%
+  # dplyr::select(Watershed, `Midcentury median`) %>%
+  ggplot2::ggplot(ggplot2::aes(x = Watershed,
+                               y = 100 * (Value - 1))) +
+  ggplot2::geom_boxplot(outlier.shape = NA) +
+  ylab("% Change in April 1 SWE")
+
+```
 
 ### Midcentury % of normal April 1st SWE, station to modeled, point values {-}
 These maps compare empirical April 1 SWE values from SNOTEL stations to the modeled midcentury SWE values extracted from those same station locations (i.e., the data from the station table above).
@@ -638,7 +744,7 @@ snotel_data_1981 <-
   dplyr::select(`WBD code`, Watershed, dplyr::everything())
 
 snotel_data_1971 <- 
-    snotel_data %>%
+  snotel_data %>%
   dplyr::mutate(Midcentury_median = 100 * `BCSD 2049-2060 median (in.)` / `SNOTEL 1971-2000 normal (in.)`) %>%
   group_by(`WBD code`) %>%
   dplyr::summarise(`Stations Count` = n(),

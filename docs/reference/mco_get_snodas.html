@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Montana Climate Office theme for maps — mco_theme_map • mcor</title>
+<title>Download and process the Montana SNOTEL site inventory from the
+NRCS National Water and Climate Center — mco_get_snodas • mcor</title>
 
 
 <!-- jquery -->
@@ -35,8 +36,10 @@
 
 
 
-<meta property="og:title" content="Montana Climate Office theme for maps — mco_theme_map" />
-<meta property="og:description" content="A ggplot2 theme that is good for displaying maps from ggplot2::geom_sf." />
+<meta property="og:title" content="Download and process the Montana SNOTEL site inventory from the
+NRCS National Water and Climate Center — mco_get_snodas" />
+<meta property="og:description" content="Download and process the Montana SNOTEL site inventory from the
+NRCS National Water and Climate Center" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -115,45 +118,96 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Montana Climate Office theme for maps</h1>
+    <h1>Download and process the Montana SNOTEL site inventory from the
+NRCS National Water and Climate Center</h1>
     
-    <div class="hidden name"><code>mco_theme_map.Rd</code></div>
+    <div class="hidden name"><code>mco_get_snodas.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>A <strong>ggplot2</strong> theme that is good for displaying maps from <a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>ggplot2::geom_sf</a>.</p>
+    <p>Download and process the Montana SNOTEL site inventory from the
+NRCS National Water and Climate Center</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mco_theme_map</span>(<span class='kw'>base_size</span> <span class='kw'>=</span> <span class='fl'>6.5</span>, <span class='kw'>base_family</span> <span class='kw'>=</span> <span class='st'>""</span>)</pre>
+    <pre class="usage"><span class='fu'>mco_get_snodas</span>(
+  <span class='kw'>x</span> <span class='kw'>=</span> <span class='no'>mt_state</span> <span class='kw'>%&gt;%</span> <span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/sf/man/geos_unary.html'>st_buffer</a></span>(<span class='fl'>10000</span>),
+  <span class='kw'>date</span> <span class='kw'>=</span> <span class='st'>"latest"</span>,
+  <span class='kw'>masked</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>out_dir</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>(),
+  <span class='kw'>overwrite</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
+)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>base_size</th>
-      <td><p>base font size</p></td>
+      <th>stations</th>
+      <td><p>A character vector of station identifiers in trinomial format (e.g., '1040:CO:SNTL').</p></td>
     </tr>
     <tr>
-      <th>base_family</th>
-      <td><p>base font family</p></td>
+      <th>variables</th>
+      <td><p>A character vector of variables to request.
+Variables and their associated values are in variable/value pairs
+in the format "VARIABLE::value" (for example, "WTEQ::normal_1981"
+will give the 1981--2010 normal value for Snow Water Equivalent).
+Possible variables include:</p><ul>
+<li><p><strong>TAVG</strong> --- Daily average air temperature (ºF)</p></li>
+<li><p><strong>TMAX</strong> --- Daily maximum air temperature (ºF)</p></li>
+<li><p><strong>TMIN</strong> --- Daily minimum air temperature (ºF)</p></li>
+<li><p><strong>TOBS</strong> --- Instantaneously observed air temperature at start of day (ºF)</p></li>
+<li><p><strong>BATT</strong> --- Battery voltage at start of day (volts)</p></li>
+<li><p><strong>BATX</strong> --- Daily maximum battery voltage (volts)</p></li>
+<li><p><strong>PREC</strong> --- Water year accumulated precipitation at start of day (inches)</p></li>
+<li><p><strong>PRCP</strong> --- Daily total precipitation (inches)</p></li>
+<li><p><strong>PRCPSA</strong> --- Daily total precipitation, snow-adjusted (inches)</p></li>
+<li><p><strong>SNWD</strong> --- Total snow depth at start of day (inches)</p></li>
+<li><p><strong>WTEQ</strong> --- Snow water equivalent at start of day (inches)</p></li>
+<li><p><strong>WTEQX</strong> --- Daily maximum snow water equivalent (inches)</p></li>
+<li><p><strong>SNDN</strong> --- Snow density at start of day (percent)</p></li>
+<li><p><strong>SNRR</strong> --- Daily snow rain ratio (unitless)</p></li>
+</ul>
+
+<p>Not all values are available for all variables. Possible values include:</p><ul>
+<li><p><strong>value</strong> --- The measured value</p></li>
+<li><p><strong>qcFlag</strong> --- Quality control flag</p></li>
+<li><p><strong>qaFlag</strong> --- Quality assurance flag</p></li>
+<li><p><strong>prevValue</strong> --- Previous year's value</p></li>
+<li><p><strong>delta</strong> --- Delta, change from previous year's value</p></li>
+<li><p><strong>collectionDate</strong> --- Collection date</p></li>
+<li><p><strong>normal_1981</strong> --- Normal (1981-2010)</p></li>
+<li><p><strong>pctOfNormal_1981</strong> --- % of normal (1981-2010)</p></li>
+<li><p><strong>average_1981</strong> --- Average (1981-2010)</p></li>
+<li><p><strong>pctOfAverage_1981</strong> --- % of average (1981-2010)</p></li>
+<li><p><strong>median_1981</strong> --- Median (1981-2010)</p></li>
+<li><p><strong>pctOfMedian_1981</strong> --- % of median (1981-2010)</p></li>
+<li><p><strong>normal_1971</strong> --- Normal (1971-2000)</p></li>
+<li><p><strong>pctOfNormal_1971</strong> --- % of normal (1971-2000)</p></li>
+</ul></td>
+    </tr>
+    <tr>
+      <th>start_date</th>
+      <td><p>A <a href='https://rdrr.io/r/base/Dates.html'>Date</a> object as the start date. Defaults to period of record.</p></td>
+    </tr>
+    <tr>
+      <th>end_date</th>
+      <td><p>A <a href='https://rdrr.io/r/base/Dates.html'>Date</a> object as the end date. Defaults to period of record.</p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>A data frame containing the requested variables.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
-
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='no'>mt_counties_simple</span>) +
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>Division</span>),
-              <span class='kw'>color</span> <span class='kw'>=</span> <span class='st'>"white"</span>) +
-  <span class='fu'>mco_theme_map</span>()
-  }</div></pre>
+<span class='fu'><a href='mco_get_snotel_data.html'>mco_get_snotel_data</a></span>()
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
+      <li><a href="#value">Value</a></li>
       <li><a href="#examples">Examples</a></li>
     </ul>
 

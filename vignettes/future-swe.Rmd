@@ -88,7 +88,7 @@ bcsd_swe_midcentury <-
                                  dplyr::filter(`Hydrologic Unit` == huc) %>%
                                  sf::st_bbox() %>%
                                  sf::st_as_sfc() %>%
-                                 lwgeom::st_transform_proj(4326) %>%
+                                 sf::st_transform(4326) %>%
                                  # magrittr::add(c(360,0)) %>%
                                  sf::st_bbox(),
                                vars = var,
@@ -134,7 +134,7 @@ bcsd_swe_1971_2000 <-
                                  dplyr::filter(`Hydrologic Unit` == huc) %>%
                                  sf::st_bbox() %>%
                                  sf::st_as_sfc() %>%
-                                 lwgeom::st_transform_proj(4326) %>%
+                                 sf::st_transform(4326) %>%
                                  # magrittr::add(c(360,0)) %>%
                                  sf::st_bbox(),
                                vars = var,
@@ -180,7 +180,7 @@ bcsd_swe_1981_2010 <-
                                  dplyr::filter(`Hydrologic Unit` == huc) %>%
                                  sf::st_bbox() %>%
                                  sf::st_as_sfc() %>%
-                                 lwgeom::st_transform_proj(4326) %>%
+                                 sf::st_transform(4326) %>%
                                  # magrittr::add(c(360,0)) %>%
                                  sf::st_bbox(),
                                vars = var,
@@ -278,7 +278,7 @@ snotel_inventory <- mcor::mco_get_snotel_inventory() %>%
                                    dplyr::filter(`Hydrologic Unit` %in% c(huc)) %$%
                                    `WBD code`)) %>%
   sf::st_as_sf() %>%
-  lwgeom::st_transform_proj(mcor::mt_state_plane) %>%
+  sf::st_transform(mcor::mt_state_plane) %>%
   dplyr::select(-`Station Id`:-`End Date`)
 
 snotel_data <- mcor::mco_get_snotel_data(stations = snotel_inventory$Station %>%
@@ -351,7 +351,7 @@ This section of code extracts the BCSD mid-century data for the SNOTEL locations
 snotel_bcsd_midcentury <-  raster::extract(bcsd_swe_midcentury, 
                                            snotel_data %>%
                                              sf::st_cast() %>%
-                                             lwgeom::st_transform_proj(4326),
+                                             sf::st_transform(4326),
                                            df = TRUE) %>%
   dplyr::select(-ID) %>%
   magrittr::set_names(c("BCSD Midcentury min.", 
@@ -364,7 +364,7 @@ snotel_bcsd_midcentury <-  raster::extract(bcsd_swe_midcentury,
 snotel_bcsd_normal_1971_2000 <- raster::extract(bcsd_swe_1971_2000, 
                                                 snotel_data %>%
                                                   sf::st_cast() %>%
-                                                  lwgeom::st_transform_proj(4326),
+                                                  sf::st_transform(4326),
                                                 df = TRUE) %>%
   dplyr::select(-ID) %>%
   magrittr::set_names(c("BCSD 1971-2000 min.", 
@@ -377,7 +377,7 @@ snotel_bcsd_normal_1971_2000 <- raster::extract(bcsd_swe_1971_2000,
 snotel_bcsd_normal_1981_2010 <- raster::extract(bcsd_swe_1981_2010, 
                                                 snotel_data %>%
                                                   sf::st_cast() %>%
-                                                  lwgeom::st_transform_proj(4326),
+                                                  sf::st_transform(4326),
                                                 df = TRUE) %>%
   dplyr::select(-ID) %>%
   magrittr::set_names(c("BCSD 1981-2010 min.", 
@@ -596,7 +596,7 @@ bcsd_swe_1971_2000_all_models <-
                                  dplyr::filter(`Hydrologic Unit` == huc) %>%
                                  sf::st_bbox() %>%
                                  sf::st_as_sfc() %>%
-                                 lwgeom::st_transform_proj(4326) %>%
+                                 sf::st_transform(4326) %>%
                                  # magrittr::add(c(360,0)) %>%
                                  sf::st_bbox(),
                                vars = var,
@@ -634,7 +634,7 @@ bcsd_swe_midcentury_all_models <-
                                  dplyr::filter(`Hydrologic Unit` == huc) %>%
                                  sf::st_bbox() %>%
                                  sf::st_as_sfc() %>%
-                                 lwgeom::st_transform_proj(4326) %>%
+                                 sf::st_transform(4326) %>%
                                  # magrittr::add(c(360,0)) %>%
                                  sf::st_bbox(),
                                vars = var,

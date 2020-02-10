@@ -5,10 +5,15 @@
 \title{A wrapper around \link{mco_get_gridmet} to download GridMET normal dataset (1981--2010).
 Here, the normals are defined as the daily mean values for the 1981--2010 period.}
 \usage{
-mco_get_gridmet_normals(x = mt_state \%>\% sf::st_buffer(10000),
+mco_get_gridmet_normals(
+  x = mt_state \%>\% sf::st_buffer(10000),
   elements = c("precipitation_amount", "daily_minimum_temperature",
-  "daily_maximum_temperature"), out_dir = tempdir(), p = c(0, 0.025, 0.25,
-  0.5, 0.75, 0.975, 1), overwrite = FALSE, ...)
+    "daily_maximum_temperature"),
+  out_dir = tempdir(),
+  p = c(0, 0.025, 0.25, 0.5, 0.75, 0.975, 1),
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class sf.}

@@ -4,8 +4,14 @@
 \alias{mco_get_macav2_monthly}
 \title{Download select MACA V2 datasets.}
 \usage{
-mco_get_macav2_monthly(x = mt_state \%>\% sf::st_buffer(10000), elements,
-  models, scenarios, out_dir = tempdir(), ...)
+mco_get_macav2_monthly(
+  x = mt_state \%>\% sf::st_buffer(10000),
+  elements,
+  models,
+  scenarios,
+  out_dir = tempdir(),
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class sf.}

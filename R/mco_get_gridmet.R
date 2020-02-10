@@ -112,7 +112,7 @@ mco_get_gridmet <- function(x = mt_state %>%
                          thredds::tds_ncss_download(ncss_url = path,
                                                     bbox =
                                                       x %>%
-                                                      lwgeom::st_transform_proj(4326) %>%
+                                                      sf::st_transform(4326) %>%
                                                       sf::st_bbox(),
                                                     vars = name,
                                                     out_file = stringr::str_c(out_dir,"/",name,".nc"),

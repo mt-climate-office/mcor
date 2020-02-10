@@ -24,7 +24,7 @@ A dataset containing polygons of Montana counties.
 These data are built from the Montana Cadastral database,
 and are available from \href{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}{the Montana State Library},
 and transformed using \code{\link[sf:st_transform]{sf::st_transform()}} to the \emph{NAD 1983 HARN StatePlane Montana FIPS 2500} projection
-coordinate system (\href{https://epsg.io/102300}{EPSG: 102300}). They were then joined with the \href{https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.ncdc:C00005}{MontanaClimate Divisions}.
+coordinate system (\href{https://epsg.io/102300}{EPSG: 102300}). They were then joined with the \href{https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.ncdc:C00005}{Montana Climate Divisions}.
 These polygons are appropriate for large print maps.
 The script that prepared the data is \url{data-raw/raw_data.R} in the source version of this
 package.

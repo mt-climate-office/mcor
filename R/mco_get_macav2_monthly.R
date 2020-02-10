@@ -58,7 +58,7 @@ mco_get_macav2_monthly <- function(x = mt_state %>%
   x_bbox <- x %>%
     sf::st_bbox() %>%
     sf::st_as_sfc() %>%
-    lwgeom::st_transform_proj(4326) %>%
+    sf::st_transform(4326) %>%
     sf::st_bbox()
 
   macav2_datasets %>%

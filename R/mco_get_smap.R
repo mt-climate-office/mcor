@@ -76,25 +76,37 @@ https://urs.earthdata.nasa.gov/")
     dates <- latest_date
   }
 
-  out <- smapr::find_smap(id = id,
-                          dates = dates,
-                          version = version) %>%
+  # out <- smapr::find_smap(id = id,
+  #                         dates = dates,
+  #                         version = version) %>%
+  #   smapr::download_smap(directory = raw_dir,
+  #                        overwrite = FALSE) %>%
+  #   smapr:::local_h5_paths()
+
+
+  smapr::find_smap(id = id,
+                   dates = dates,
+                   version = version) %>%
     smapr::download_smap(directory = raw_dir,
                          overwrite = FALSE) %>%
-    smapr:::local_h5_paths()
-
-  out %>%
-    purrr::map(function(x){
-      x %>%
-        rhdf5::h5read(name = stringr::str_c(group,"/",name)) %>%
-        smapr:::rasterize_matrix(file = x,
-                                 name = group)
-    }) %>%
-    raster::brick() %>%
+    smapr::extract_smap(name = stringr::str_c(group,"/",name)) %>%
     raster::crop(mt_state_simple %>%
                    sf::st_buffer(10000) %>%
                    sf::st_transform("+proj=cea +lat_ts=30 +datum=WGS84 +units=m +ellps=WGS84 +towgs84=0,0,0") %>%
-                   methods::as("Spatial")) %>%
-    magrittr::set_names(basename(out))
+                   methods::as("Spatial"))
+
+  # out %>%
+  #   purrr::map(function(x){
+  #     x %>%
+  #       rhdf5::h5read(name = stringr::str_c(group,"/",name)) %>%
+  #       smapr:::rasterize_matrix(file = x,
+  #                                name = group)
+  #   }) %>%
+  #   raster::brick() %>%
+  #   raster::crop(mt_state_simple %>%
+  #                  sf::st_buffer(10000) %>%
+  #                  sf::st_transform("+proj=cea +lat_ts=30 +datum=WGS84 +units=m +ellps=WGS84 +towgs84=0,0,0") %>%
+  #                  methods::as("Spatial")) %>%
+  #   magrittr::set_names(basename(out))
 
 }

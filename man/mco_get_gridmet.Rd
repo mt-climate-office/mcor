@@ -4,10 +4,15 @@
 \alias{mco_get_gridmet}
 \title{Download select GridMET datasets.}
 \usage{
-mco_get_gridmet(x = mt_state \%>\% sf::st_buffer(10000),
+mco_get_gridmet(
+  x = mt_state \%>\% sf::st_buffer(10000),
   elements = c("precipitation_amount", "daily_minimum_temperature",
-  "daily_maximum_temperature"), dates = "latest", out_dir = tempdir(),
-  overwrite = TRUE, ...)
+    "daily_maximum_temperature"),
+  dates = "latest",
+  out_dir = tempdir(),
+  overwrite = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class sf.}
@@ -15,7 +20,7 @@ mco_get_gridmet(x = mt_state \%>\% sf::st_buffer(10000),
 \item{elements}{Gridmet variables to download.}
 
 \item{dates}{An object of class Date or a character string formatted as
-%Y-%m-%d (e.g., "2016-04-01") which specifies the date(s) to search.
+\%Y-\%m-\%d (e.g., "2016-04-01") which specifies the date(s) to search.
 To search for one specific date, this can be a Date object of length one. To
 return data over a time interval, it can be a vector of length 2
 (e.g., c("2018-01-01","2018-03-31")). Use "latest" (the default) to retreive the

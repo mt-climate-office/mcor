@@ -59,7 +59,7 @@ mco_get_swe_basins <- function(date = "latest",
                                      dplyr::filter(`Hydrologic Unit` %in% c(huc)) %$%
                                      `WBD code`)) %>%
     sf::st_as_sf() %>%
-    lwgeom::st_transform_proj(mt_state_plane) %>%
+    sf::st_transform(mt_state_plane) %>%
     dplyr::select(-`Station Id`:-`End Date`)
 
   snotel_data <- mco_get_snotel_data(stations = snotel_inventory$Station %>%

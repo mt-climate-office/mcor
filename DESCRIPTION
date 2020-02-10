@@ -1,6 +1,6 @@
 Package: mcor
 Title: The Core Montana Climate Office R Package
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("Kyle", "Bocinsky", email = "kyle.bocinsky@umontana.edu", role = c("aut", "cre"))
 Description: The Montana Climate Office is an independent state-designated body that provides 
     Montanans with high-quality, timely, relevant, and scientifically based 
@@ -11,7 +11,7 @@ Description: The Montana Climate Office is an independent state-designated body 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2
 Roxygen: list(markdown = TRUE)
 Depends: R (>= 3.4.0)
 Imports: 
@@ -41,13 +41,17 @@ Imports:
     fst,
     fasterize,
     matrixStats,
-    tibble
+    tibble,
+    tmap,
+    leaflet,
+    leafem,
+    htmlwidgets,
+    leaflet.extras
 Suggests: 
     testthat,
     covr,
     knitr,
     rmarkdown,
-    leaflet,
     tidyverse,
     htmltools,
     RColorBrewer,

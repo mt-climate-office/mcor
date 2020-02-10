@@ -16,7 +16,7 @@ A simple feature collection with 4 fields:
 \item \strong{Station Id} — the SNOTEL station identification number
 \item \strong{Station Name} — the SNOTEL station location name
 \item \strong{State Code} — the two letter state code
-\item \strong{\code{Network Code}} — the code for the station network
+\item \strong{\verb{Network Code}} — the code for the station network
 \item \strong{Start Date} — the date the stations started recording data
 }
 }

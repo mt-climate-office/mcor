@@ -106,7 +106,7 @@ mco_leaflet_base <- function(attribution = ""){
     leaflet::addMapPane("background", zIndex = 410) %>%
     leaflet::addMapPane("middleground", zIndex = 420) %>%
     leaflet::addMapPane("foreground", zIndex = 430) %>%
-    leaflet::addTiles("https://maps.tilehosting.com/data/hillshades/{z}/{x}/{y}.png?key=KZO7rAv96Alr8UVUrd4a",
+    leaflet::addTiles("https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=KZO7rAv96Alr8UVUrd4a",
                       attribution = attribution,
                       options = leaflet::tileOptions(pane = "foreground")) %>%
     leaflet::addProviderTiles("Stamen.TonerLines",

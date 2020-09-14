@@ -9,29 +9,30 @@ library(geosphere)
 library(velox)
 
 # The NAD 1983 HARN StatePlane Montana FIPS 2500 coordinate reference system
-mt_state_plane <- sf::st_crs(102300)
+mt_state_plane <- sf::st_crs("ESRI:102300")
 
 # Get the Montana county boundary dataset from the Montana Spatial Data Infrastructure
 FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip", destdir = "./data-raw")
 unzip("./data-raw/MontanaCounties.zip", exdir = "./data-raw/MontanaCounties")
-mt_counties <- sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County") %>%
-  lwgeom::st_transform_proj(mt_state_plane) %>%
-dplyr::mutate(`State FIPS code` = "30") %>%
-dplyr::select(NAMELABEL,
-              `State FIPS code`,
-              FIPS) %>%
-dplyr::mutate_at(.vars = vars(NAMELABEL:FIPS), .funs = ~as.character(.)) %>%
-dplyr::rename(`County` = NAMELABEL,
-              `County FIPS code` = FIPS) %>%
-tibble::as_data_frame() %>%
-sf::st_as_sf()
+mt_counties <-
+  sf::st_read("./data-raw/MontanaCounties/MontanaCounties.gdb", layer = "County") %>%
+  sf::st_transform(mt_state_plane) %>%
+  dplyr::mutate(`State FIPS code` = "30") %>%
+  dplyr::select(NAMELABEL,
+                `State FIPS code`,
+                FIPS) %>%
+  dplyr::mutate_at(.vars = vars(NAMELABEL:FIPS), .funs = ~as.character(.)) %>%
+  dplyr::rename(`County` = NAMELABEL,
+                `County FIPS code` = FIPS) %>%
+  tibble::as_data_frame() %>%
+  sf::st_as_sf()
 
 # Get the Montana county boundary from US Census TIGER database
 # FedData::download_data("https://www2.census.gov/geo/tiger/TIGER2017/COUNTY/tl_2017_us_county.zip", destdir = "./data-raw")
 # unzip("./data-raw/tl_2017_us_county.zip", exdir = "./data-raw/tl_2017_us_county")
 # mt_counties <- sf::st_read("./data-raw/tl_2017_us_county/tl_2017_us_county.shp") %>%
 #   dplyr::filter(STATEFP == "30") %>%
-#   lwgeom::st_transform_proj(mt_state_plane) %>%
+#   sf::st_transform(mt_state_plane) %>%
 #   dplyr::select(NAME,
 #                 STATEFP,
 #                 COUNTYFP,
@@ -50,7 +51,7 @@ sf::st_as_sf()
 FedData::download_data("http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaReservations.zip", destdir = "./data-raw")
 unzip("./data-raw/MontanaReservations.zip", exdir = "./data-raw/MontanaReservations")
 mt_tribal_land <- sf::st_read("./data-raw/MontanaReservations/MontanaReservations.gdb", layer = "MontanaReservations") %>%
-  lwgeom::st_transform_proj(mt_state_plane) %>%
+  sf::st_transform(mt_state_plane) %>%
   dplyr::select(NAME) %>%
   dplyr::mutate(NAME = NAME %>%
                   as.character() %>%
@@ -80,16 +81,19 @@ mt_climate_divisions <- sf::st_read("./data-raw/CONUS_CLIMATE_DIVISIONS/GIS.OFFI
   dplyr::mutate(`Division` = `Division` %>%
                   tolower() %>%
                   tools::toTitleCase()) %>%
-  lwgeom::st_transform_proj(mt_state_plane)
+  sf::st_transform(mt_state_plane)
 
 mt_counties %<>%
   sf::st_centroid() %>%
   sf::st_intersection(mt_climate_divisions) %>%
-  sf::st_set_geometry(NULL) %>%
-  dplyr::select(`County FIPS code`,
+  sf::st_drop_geometry() %>%
+  dplyr::select(`County.FIPS.code`,
                 `Division`,
-                `Division code`,
-                `Division FIPS code`) %>%
+                `Division.code`,
+                `Division.FIPS.code`)  %>%
+  dplyr::rename(`County FIPS code` = `County.FIPS.code`,
+                `Division code` = `Division.code`,
+                `Division FIPS code` = `Division.FIPS.code`) %>%
   left_join(mt_counties, .) %>%
   tibble::as_tibble() %>%
   sf::st_as_sf()
@@ -110,18 +114,23 @@ mt_climate_divisions <- mt_counties %>%
 
 mt_counties_simple <- mt_counties %>%
   rmapshaper::ms_simplify() %>%
-  magrittr::set_names(names(mt_counties)) %>%
+  dplyr::rename(`State FIPS code` = `State.FIPS.code`,
+                `County FIPS code` = `County.FIPS.code`,
+                `Division code` = `Division.code`,
+                `Division FIPS code` = `Division.FIPS.code`) %>%
+  # magrittr::set_names(names(mt_counties)) %>%
   tibble::as_tibble() %>%
   sf::st_as_sf()
 
-mt_climate_divisions_simple <- mt_counties_simple %>%
+mt_climate_divisions_simple <-
+  mt_counties_simple %>%
   dplyr::select(`Division`,
                 `Division code`,
                 `Division FIPS code`) %>%
   dplyr::group_by(`Division`,
                   `Division code`,
                   `Division FIPS code`) %>%
-  summarise() %>%
+  dplyr::summarise() %>%
   sf::st_union(by_feature = TRUE) %>%
   dplyr::arrange(`Division code`) %>%
   dplyr::ungroup() %>%
@@ -178,7 +187,8 @@ mt_ned <- FedData::get_ned(template = mt_counties %>%
 
 system("gdaldem hillshade ./data-raw/mt_NED_1.tif ./data-raw/mt_hillshade.tif -z 2 -s 111120 -multidirectional -co 'COMPRESS=DEFLATE' -co 'ZLEVEL=9'")
 
-mt_hillshade_500m <- raster("./data-raw/mt_hillshade.tif") %>%
+mt_hillshade_500m <-
+  raster("./data-raw/mt_hillshade.tif") %>%
   aggregate_longlat(res = 500) %>%
   raster::projectRaster(mt_rast_500) %>%
   raster::crop(mt_counties %>%
@@ -198,69 +208,45 @@ FedData::download_data("https://prd-tnm.s3.amazonaws.com/StagedProducts/Hydrogra
 unzip("./data-raw/WBD_National_GDB.zip",
       exdir = "./data-raw/WBD_National_GDB")
 
-# The latest HUC12 is corrupt (Jan 3, 2018), so this goes through HUC10, and then we supplement.
 mt_watersheds <- seq(2,10,2) %>%
   purrr::map(function(hu){
     layer_name <- paste0("WBDHU",hu)
 
-    out <- sf::st_read("./data-raw/WBD_National_GDB/WBD/WBD.gdb",
+    out <- sf::st_read("./data-raw/WBD_National_GDB/WBD_National_GDB.gdb",
                        layer = layer_name) %>%
-      dplyr::filter(grepl("MT",STATES)) %>%
+      dplyr::filter(grepl("MT",states)) %>%
       dplyr::select(dplyr::starts_with("HUC"),
-                    NAME) %>%
+                    name) %>%
       dplyr::mutate(`Hydrologic Unit` = factor(hu,
                                                levels = seq(2,12,2),
                                                ordered = TRUE)) %>%
-      dplyr::rename(Watershed = NAME,
-                    geometry = SHAPE)
+      dplyr::rename(Watershed = name,
+                    geometry = shape)
 
     names(out)[1] <- "WBD code"
 
     return(out)
   }) %>%
   do.call(rbind,.) %>%
-  lwgeom::st_transform_proj(mt_state_plane) %>%
+  sf::st_transform(mt_state_plane) %>%
   tibble::as_tibble() %>%
   sf::st_as_sf()
-
-# # Download HUC12 dataset from https://nrcs.app.box.com/v/gateway/folder/39640323180
-# unzip("./data-raw/wbdhu12_a_us_september2017.zip",
-#       exdir = "./data-raw/wbdhu12_a_us_september2017")
-#
-# huc12 <- sf::st_read("./data-raw/wbdhu12_a_us_september2017/wbdhu12_a_us_september2017.gdb",
-#                    layer = "WBDHU12") %>%
-#   dplyr::filter(grepl("MT",STATES)) %>%
-#   dplyr::select(dplyr::starts_with("HUC"),
-#                 NAME) %>%
-#   dplyr::mutate(`Hydrologic Unit` = factor(12,
-#                                            levels = seq(2,12,2),
-#                                            ordered = TRUE)) %>%
-#   dplyr::rename(Watershed = NAME,
-#                 geometry = Shape) %>%
-#   lwgeom::st_transform_proj(mt_state_plane) %>%
-#   tibble::as_tibble() %>%
-#   sf::st_as_sf()
-#
-# names(huc12)[1] <- "WBD code"
-#
-# mt_watersheds %<>%
-#   rbind(huc12)
 
 mt_watersheds_simple <- mt_watersheds %>%
   rmapshaper::ms_simplify() %>%
   magrittr::set_names(names(mt_watersheds))
 
-devtools::use_data(mt_state_plane, overwrite = T)
-devtools::use_data(mt_state, overwrite = T)
-devtools::use_data(mt_state_simple, overwrite = T)
-devtools::use_data(mt_counties, overwrite = T)
-devtools::use_data(mt_counties_simple, overwrite = T)
-devtools::use_data(mt_tribal_land, overwrite = T)
-devtools::use_data(mt_climate_divisions, overwrite = T)
-devtools::use_data(mt_climate_divisions_simple, overwrite = T)
-devtools::use_data(mt_hillshade_500m, overwrite = T)
-devtools::use_data(mt_watersheds, overwrite = T)
-devtools::use_data(mt_watersheds_simple, overwrite = T)
+usethis::use_data(mt_state_plane, overwrite = T)
+usethis::use_data(mt_state, overwrite = T)
+usethis::use_data(mt_state_simple, overwrite = T)
+usethis::use_data(mt_counties, overwrite = T)
+usethis::use_data(mt_counties_simple, overwrite = T)
+usethis::use_data(mt_tribal_land, overwrite = T)
+usethis::use_data(mt_climate_divisions, overwrite = T)
+usethis::use_data(mt_climate_divisions_simple, overwrite = T)
+usethis::use_data(mt_hillshade_500m, overwrite = T)
+usethis::use_data(mt_watersheds, overwrite = T)
+usethis::use_data(mt_watersheds_simple, overwrite = T)
 
 unlink("./data-raw/tl_2017_us_county",
        recursive = TRUE)

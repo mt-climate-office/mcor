@@ -4,10 +4,12 @@
 \name{mt_tribal_land}
 \alias{mt_tribal_land}
 \title{Polygons of Montana Tribal Land}
-\format{A simple feature collection with 7 features and 1 field:
+\format{
+A simple feature collection with 7 features and 1 field:
 \itemize{
 \item \strong{Name} — the reservation name
-}}
+}
+}
 \source{
 \url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaReservations.zip}
 }

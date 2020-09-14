@@ -4,12 +4,14 @@
 \name{mt_climate_divisions_simple}
 \alias{mt_climate_divisions_simple}
 \title{Simplified polygons of Montana Climate Divisions}
-\format{A simple feature collection with 56 features and 3 fields:
+\format{
+A simple feature collection with 56 features and 3 fields:
 \itemize{
 \item \strong{Division} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
 \item \strong{Division code} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
 \item \strong{Division FIPS code} — the Federal Information Processing Standard (FIPS) climate division code
-}}
+}
+}
 \source{
 \url{https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.ncdc:C00005}
 }

@@ -12,6 +12,7 @@ mco_leaflet(
   midpoint = 0,
   digits = 1,
   reverse = FALSE,
+  pane = "foreground",
  
     attribution = "Climate data by <a href='http://www.climatologylab.org/gridmet.html' target='_blank'>gridMET</a> via <a href='https://earthengine.google.com/' target='_blank'>Google Earth Engine</a>",
   ...

@@ -4,7 +4,8 @@
 \name{mt_counties}
 \alias{mt_counties}
 \title{Polygons of Montana Counties}
-\format{A simple feature collection with 56 features and 8 fields:
+\format{
+A simple feature collection with 56 features and 8 fields:
 \itemize{
 \item \strong{County} — the county name
 \item \strong{State FIPS code} — the Federal Information Processing Standard (FIPS) state code
@@ -12,7 +13,8 @@
 \item \strong{Division} — the NOAA Climate Divisional Database (nCLIMDIV) climate division name
 \item \strong{Division code} — the NOAA Climate Divisional Database (nCLIMDIV) identifier
 \item \strong{Division FIPS code} — the Federal Information Processing Standard (FIPS) climate division code
-}}
+}
+}
 \source{
 \url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}
 }

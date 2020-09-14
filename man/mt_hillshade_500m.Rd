@@ -4,7 +4,9 @@
 \name{mt_hillshade_500m}
 \alias{mt_hillshade_500m}
 \title{A 500 Meter Hillshaded Elevation Model of Montana}
-\format{A \link[raster:Raster-class]{RasterLayer} object.}
+\format{
+A \link[raster:Raster-classes]{RasterLayer} object.
+}
 \usage{
 mt_hillshade_500m
 }

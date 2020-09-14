@@ -4,7 +4,9 @@
 \name{mt_state}
 \alias{mt_state}
 \title{Polygon of Montana Boundary}
-\format{A geometry set with one feature.}
+\format{
+A geometry set with one feature.
+}
 \source{
 \url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}
 }
@@ -14,7 +16,7 @@ mt_state
 \description{
 A dataset containing the Montana boundary polygon.
 These data are derived from the \link{mt_counties} dataset;
-county borders were dissolved using the \link[sf:st_union]{sf::st_union} function.
+county borders were dissolved using the \link[sf:geos_combine]{sf::st_union} function.
 This process ensures the extent of the state is the same as the \link{mt_counties} dataset.
 These polygons are appropriate for large print maps.
 The script that prepared the data is \url{data-raw/raw_data.R} in the source version of this

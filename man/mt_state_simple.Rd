@@ -4,7 +4,9 @@
 \name{mt_state_simple}
 \alias{mt_state_simple}
 \title{Simplified Polygon of Montana Boundary}
-\format{A geometry set with one feature.}
+\format{
+A geometry set with one feature.
+}
 \source{
 \url{http://ftp.geoinfo.msl.mt.gov/Data/Spatial/MSDI/AdministrativeBoundaries/MontanaCounties.zip}
 }
@@ -14,7 +16,7 @@ mt_state_simple
 \description{
 A dataset containing the Montana boundary polygon.
 These data are \link{mt_counties}, simplified using \code{\link[rmapshaper:ms_simplify]{rmapshaper::ms_simplify()}}
-and then dissolved using the \link[sf:st_union]{sf::st_union} function.
+and then dissolved using the \link[sf:geos_combine]{sf::st_union} function.
 These polygons are appropriate for web maps and small print maps.
 The script that prepared the data is \url{data-raw/raw_data.R} in the source version of this
 package.

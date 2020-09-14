@@ -4,12 +4,14 @@
 \name{mt_watersheds}
 \alias{mt_watersheds}
 \title{The Watershed Boundary Dataset Intersecting Montana}
-\format{A simple feature collection with 56 features and 3 fields:
+\format{
+A simple feature collection with 56 features and 3 fields:
 \itemize{
 \item \strong{WBD code} — the WBD identifier
 \item \strong{Watershed} — the WBD watershed name
 \item \strong{Hydrologic Unit} — the hydrologic unit representing the level of the polygon
-}}
+}
+}
 \source{
 \url{https://nhd.usgs.gov/wbd.html}
 }

@@ -4,11 +4,13 @@
 \name{mt_state_plane}
 \alias{mt_state_plane}
 \title{The Montana State Plane Coordinate Reference System}
-\format{An object of class \link[sf:st_crs]{sf::crs} of length 2.
+\format{
+An object of class \link[sf:st_crs]{sf::crs} of length 2.
 \itemize{
 \item \strong{epsg} — an integer (102300) representing the (\href{http://epsg.org/}{EPSG}) code
 \item \strong{proj4string} — a character string representing the associated \href{http://proj4.org/}{proj.4} code
-}}
+}
+}
 \source{
 \url{https://epsg.io/102300}
 }

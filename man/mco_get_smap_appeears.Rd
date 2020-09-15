@@ -8,6 +8,7 @@ mco_get_smap_appeears(
   id = "SPL4SMGP",
   group = "Geophysical_Data",
   name = "sm_rootzone",
+  version = 4,
   start_date = "latest",
   end_date = "latest",
   raw_dir = NULL

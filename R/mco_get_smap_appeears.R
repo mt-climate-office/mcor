@@ -37,6 +37,7 @@ utils::globalVariables(c("mt_state_simple",
 mco_get_smap_appeears <- function(id = "SPL4SMGP",
                                   group = "Geophysical_Data",
                                   name = "sm_rootzone",
+                                  version = 4,
                                   start_date = "latest",
                                   end_date = "latest",
                                   raw_dir = NULL){
@@ -54,12 +55,12 @@ https://urs.earthdata.nasa.gov/")
     raw_dir <- tempdir()
   }
 
-  version <- smapr:::https_prefix() %>%
-    smapr:::get_dir_contents() %>%
-    stringr::str_subset(id) %>%
-    stringr::str_extract('[^.]*$') %>%
-    as.integer() %>%
-    max()
+  # version <- smapr:::https_prefix() %>%
+  #   smapr:::get_dir_contents() %>%
+  #   stringr::str_subset(id) %>%
+  #   stringr::str_extract('[^.]*$') %>%
+  #   as.integer() %>%
+  #   max()
 
   latest_date <- suppressWarnings(smapr:::route_to_dates(id, version) %>%
                                     smapr:::get_dir_contents() %>%

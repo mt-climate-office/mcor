@@ -284,5 +284,3 @@ unlink("./data-raw/WBD_National_GDB.zip")
 
 unlink("./data-raw/WBD_National_GDB",
        recursive = TRUE)
-
-

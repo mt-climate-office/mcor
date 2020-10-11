@@ -16,17 +16,17 @@ mco_leaflet <- function(x,
 
   tm_out <- (x %>%
                tmap::tm_shape() +
-               tmap::tm_raster(title = "",
-                         # legend.show = FALSE,
-                         alpha = 1,
-                         style= "cont",
-                         # n = 10,
-                         palette = pal,
-                         midpoint = midpoint,
-                         legend.reverse = reverse,
-                         legend.is.portrait = TRUE,
-                         ...) +
-               tmap::tm_layout(title = legend_title) +
+               tmap::tm_raster(title = legend_title,
+                               # legend.show = FALSE,
+                               alpha = 1,
+                               style= "cont",
+                               # n = 10,
+                               palette = pal,
+                               midpoint = midpoint,
+                               legend.reverse = reverse,
+                               legend.is.portrait = TRUE,
+                               ...) +
+               # tmap::tm_layout(title = legend_title) +
                tmap::tm_view(view.legend.position = c("left","bottom"))) %>%
     tmap::tmap_leaflet()
 
@@ -36,12 +36,12 @@ mco_leaflet <- function(x,
     leaflet::addRasterImage(x,
                             group = image_query_title) %>%
     leafem::addImageQuery(x = x,
-                           # type = "click",
+                          # type = "click",
                           group = image_query_title,
-                           layerId = image_query_title,
-                           prefix = "",
-                           digits = digits,
-                           position = "bottomleft",
+                          layerId = image_query_title,
+                          prefix = "",
+                          digits = digits,
+                          position = "bottomleft",
     )
 
   if(reverse){

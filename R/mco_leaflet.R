@@ -16,7 +16,7 @@ mco_leaflet <- function(x,
 
   tm_out <- (x %>%
                tmap::tm_shape() +
-               tmap::tm_raster(title = legend_title,
+               tmap::tm_raster(title = "",
                                # legend.show = FALSE,
                                alpha = 1,
                                style= "cont",
@@ -24,8 +24,7 @@ mco_leaflet <- function(x,
                                palette = pal,
                                midpoint = midpoint,
                                legend.reverse = reverse,
-                               legend.is.portrait = TRUE,
-                               ...) +
+                               legend.is.portrait = TRUE) +
                # tmap::tm_layout(title = legend_title) +
                tmap::tm_view(view.legend.position = c("left","bottom"))) %>%
     tmap::tmap_leaflet()
@@ -64,7 +63,12 @@ mco_leaflet <- function(x,
   # tm_out$jsHooks$render[[1]]$code %<>%
   #   stringr::str_replace("document.getElementsByClassName","el.getElementsByClassName")
 
-  out$jsHooks$render <- c(out$jsHooks$render, tm_out$jsHooks$render)
+  out$jsHooks$render <- c(out$jsHooks$render,
+                          list(list(code =
+                                    paste0("function(el, x) {var tldiv = document.getElementsByClassName('leaflet-top leaflet-left')[0];var titlediv = document.createElement('div');titlediv.className = 'info legend leaflet-control';titlediv.innerHTML = \"<b>",
+                                           legend_title,
+                                           "</b>\";tldiv.insertBefore(titlediv, tldiv.childNodes[0]);}"),
+                                    data = NULL)))
 
   out$jsHooks$render %<>%
     purrr::map(function(x){

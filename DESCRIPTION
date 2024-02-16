@@ -28,14 +28,14 @@ Imports:
     stringr,
     tidyr,
     rhdf5,
-    smapr,
+    smapr (>= 0.2.1),
     xml2,
     httr,
     lubridate,
     methods,
     ncdf4,
     units,
-    thredds,
+    thredds (>= 0.0.1),
     rvest,
     biwavelet,
     fst,
@@ -57,7 +57,7 @@ Suggests:
     RColorBrewer,
     mapview,
     kableExtra
-Remotes: 
-    github::mt-climate-office/thredds
-    github::ropensci/smapr
 VignetteBuilder: knitr
+Remotes:  
+    ropensci/smapr,
+    mt-climate-office/thredds

@@ -46,7 +46,8 @@ Imports:
     leaflet,
     leafem,
     htmlwidgets,
-    leaflet.extras
+    leaflet.extras,
+    keyring
 Suggests: 
     testthat,
     covr,
@@ -58,6 +59,6 @@ Suggests:
     mapview,
     kableExtra
 VignetteBuilder: knitr
-Remotes:  
+Remotes: 
     ropensci/smapr,
     mt-climate-office/thredds

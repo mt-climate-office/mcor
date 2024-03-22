@@ -65,9 +65,9 @@ mco_leaflet <- function(x,
 
   out$jsHooks$render <- c(out$jsHooks$render,
                           list(list(code =
-                                    paste0("function(el, x) {var tldiv = document.getElementsByClassName('leaflet-top leaflet-left')[0];var titlediv = document.createElement('div');titlediv.className = 'info legend leaflet-control';titlediv.innerHTML = \"<b>",
-                                           legend_title,
-                                           "</b>\";tldiv.insertBefore(titlediv, tldiv.childNodes[0]);}"),
+                                      paste0("function(el, x) {var tldiv = document.getElementsByClassName('leaflet-top leaflet-left')[0];var titlediv = document.createElement('div');titlediv.className = 'info legend leaflet-control';titlediv.innerHTML = \"<b>",
+                                             legend_title,
+                                             "</b>\";tldiv.insertBefore(titlediv, tldiv.childNodes[0]);}"),
                                     data = NULL)))
 
   out$jsHooks$render %<>%
@@ -108,43 +108,31 @@ mco_leaflet <- function(x,
 #' @export
 #' @importFrom magrittr %>%
 mco_leaflet_base <- function(attribution = ""){
-  out <- leaflet::leaflet(options = leaflet::leafletOptions(zoomControl = FALSE)) %>%
-    leaflet::addPolygons(data = mcor::mt_state %>%
-                           sf::st_transform(4326)) %>%
+
+leaflet::leaflet(options = leaflet::leafletOptions(zoomControl = FALSE)) %>%
     leaflet::addMapPane("background", zIndex = 1) %>%
     leaflet::addMapPane("middleground", zIndex = 420) %>%
     leaflet::addMapPane("foreground", zIndex = 430) %>%
-    leaflet::addProviderTiles("Stamen.TonerBackground",
-                              options = leaflet::providerTileOptions(pane = "background",
-                                                                     attribution = "")) %>%
-    leaflet::addTiles("https://api.maptiler.com/tiles/hillshades/{z}/{x}/{y}.png?key=KZO7rAv96Alr8UVUrd4a",
-                      attribution = attribution,
+    leaflet::addTiles(httr::modify_url("https://tiles.stadiamaps.com/tiles/stamen_toner_background/{z}/{x}/{y}@2x.png",
+                                       query = list(key = keyring::key_get("stadia"))),
+                      # attribution = attribution,
+                      options = leaflet::tileOptions(pane = "background")) %>%
+    leaflet::addTiles(httr::modify_url("https://api.maptiler.com/tiles/hillshade/{z}/{x}/{y}.webp",
+                                       query = list(key = keyring::key_get("maptiler"))),
+                      # attribution = attribution,
                       options = leaflet::tileOptions(pane = "foreground")) %>%
-    leaflet::addProviderTiles("Stamen.TonerHybrid",
-                              options = leaflet::providerTileOptions(pane = "foreground",
-                                                                     attribution = "map data by <a href='https://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a>, map style by <a href='https://stamen.com/' target='_blank'>Stamen Design</a>")) %>%
-    # leaflet::addProviderTiles("Stamen.TonerLabels",
-    #                           options = leaflet::providerTileOptions(pane = "foreground",
-    #                                                                  attribution = "")) %>%
+    leaflet::addTiles(httr::modify_url("https://tiles.stadiamaps.com/tiles/stamen_toner_lines/{z}/{x}/{y}@2x.png",
+                                       query = list(key = keyring::key_get("stadia"))),
+                      # attribution = attribution,
+                      options = leaflet::tileOptions(pane = "foreground")) %>%
+    leaflet::addTiles(httr::modify_url("https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}@2x.png",
+                                       query = list(key = keyring::key_get("stadia"))),
+                      # attribution = attribution,
+                      options = leaflet::tileOptions(pane = "foreground")) %>%
     leaflet::addScaleBar(position = "bottomright",
                          options = leaflet::scaleBarOptions(metric = FALSE)) %>%
-    htmlwidgets::onRender("function(el, x) {L.control.zoom({ position: 'topright' }).addTo(this)}") %>%
-    leaflet.extras::addFullscreenControl(position = "topright") %>%
-    # htmlwidgets::onRender(JS("function(el, x){ var map = this; map._initialCenter = map.getCenter(); map._initialZoom = map.getZoom();}")) %>%
-    # leaflet::addEasyButton(easyButton(icon = "ion-arrow-shrink",
-    #                                   title = "Reset View",
-    #                                   position = "topright",
-    #                                   onClick = JS("function(btn, map){ map.setView(map._initialCenter, map._initialZoom); }"))) %>%
-    # leaflet.extras::addResetMapButton(position = "topright") %>%
-    leaflet::addEasyButton(leaflet::easyButton(
-      icon="fa-crosshairs",
-      title="Locate Me",
-      position = "topright",
-      onClick=leaflet::JS("function(btn, map){ map.locate({setView: true}); }"))) %>%
-    leaflet.extras::addSearchOSM()
+    htmlwidgets::onRender("function(el, x) {L.control.zoom({ position: 'topleft' }).addTo(this)}") %>%
+    leaflet.extras::addFullscreenControl(position = "topleft")
 
-  out$x$calls <- out$x$calls[-1]
-
-  out
 }
 
